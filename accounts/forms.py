@@ -1,13 +1,13 @@
-# Step 8
-
+# accounts/forms.py
 from django import forms
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from django.contrib.auth.models import User
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, PasswordChangeForm
 from django.core.exceptions import ValidationError
+from django.core.validators import RegexValidator
+from .models import User
 import re
 
 class CustomUserRegistrationForm(UserCreationForm):
-    """Custom user registration form with additional fields and validation"""
+    """Custom registration form for our User model"""
     
     email = forms.EmailField(
         required=True,
@@ -16,83 +16,62 @@ class CustomUserRegistrationForm(UserCreationForm):
             'placeholder': 'Enter your email address'
         })
     )
-    first_name = forms.CharField(
-        max_length=30,
+    
+    student_id = forms.CharField(
+        max_length=20,
         required=True,
         widget=forms.TextInput(attrs={
             'class': 'form-control',
-            'placeholder': 'Enter your first name'
-        })
+            'placeholder': 'Enter your student ID'
+        }),
+        validators=[RegexValidator(
+            regex=r'^\d{8,12}$',
+            message='Student ID must be 8-12 digits'
+        )]
     )
-    last_name = forms.CharField(
-        max_length=30,
-        required=True,
-        widget=forms.TextInput(attrs={
-            'class': 'form-control',
-            'placeholder': 'Enter your last name'
-        })
-    )
+    
     phone_number = forms.CharField(
         max_length=15,
-        required=False,
+        required=True,
         widget=forms.TextInput(attrs={
             'class': 'form-control',
-            'placeholder': 'Enter your phone number (optional)'
-        })
+            'placeholder': 'Enter your phone number'
+        }),
+        validators=[RegexValidator(
+            regex=r'^\+?1?\d{9,15}$',
+            message='Phone number must be 9-15 digits'
+        )]
     )
     
     class Meta:
         model = User
-        fields = ('username', 'email', 'first_name', 'last_name', 'password1', 'password2')
+        fields = ('email', 'student_id', 'phone_number', 'password1', 'password2')
         widgets = {
-            'username': forms.TextInput(attrs={
+            'password1': forms.PasswordInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Choose a username'
+                'placeholder': 'Enter password'
+            }),
+            'password2': forms.PasswordInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Confirm password'
             }),
         }
-    
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # Add Bootstrap classes to password fields
-        self.fields['password1'].widget.attrs.update({
-            'class': 'form-control',
-            'placeholder': 'Enter password'
-        })
-        self.fields['password2'].widget.attrs.update({
-            'class': 'form-control',
-            'placeholder': 'Confirm password'
-        })
-    
+
     def clean_email(self):
-        """Validate email uniqueness"""
         email = self.cleaned_data.get('email')
         if User.objects.filter(email=email).exists():
             raise ValidationError("A user with this email already exists.")
         return email
-    
-    def clean_phone_number(self):
-        """Validate phone number format"""
-        phone = self.cleaned_data.get('phone_number')
-        if phone:
-            # Basic phone number validation
-            pattern = r'^\+?1?\d{9,15}$'
-            if not re.match(pattern, phone.replace('-', '').replace(' ', '')):
-                raise ValidationError("Enter a valid phone number.")
-        return phone
-    
-    def save(self, commit=True):
-        """Save user with additional fields"""
-        user = super().save(commit=False)
-        user.email = self.cleaned_data['email']
-        user.first_name = self.cleaned_data['first_name']
-        user.last_name = self.cleaned_data['last_name']
-        if commit:
-            user.save()
-        return user
+
+    def clean_student_id(self):
+        student_id = self.cleaned_data.get('student_id')
+        if User.objects.filter(student_id=student_id).exists():
+            raise ValidationError("A user with this student ID already exists.")
+        return student_id
 
 
 class CustomLoginForm(AuthenticationForm):
-    """Custom login form using email instead of username"""
+    """Custom login form using email as username"""
     
     username = forms.EmailField(
         label='Email',
@@ -102,21 +81,19 @@ class CustomLoginForm(AuthenticationForm):
             'autofocus': True
         })
     )
+    
     password = forms.CharField(
         widget=forms.PasswordInput(attrs={
             'class': 'form-control',
             'placeholder': 'Enter your password'
         })
     )
-    
+
     def clean_username(self):
-        """Convert email to username for authentication"""
         email = self.cleaned_data.get('username')
-        try:
-            user = User.objects.get(email=email)
-            return user.username
-        except User.DoesNotExist:
+        if not User.objects.filter(email=email).exists():
             raise ValidationError("No user found with this email address.")
+        return email
 
 
 class UserProfileForm(forms.ModelForm):
@@ -124,7 +101,7 @@ class UserProfileForm(forms.ModelForm):
     
     class Meta:
         model = User
-        fields = ('first_name', 'last_name', 'email')
+        fields = ('first_name', 'last_name', 'email', 'phone_number')
         widgets = {
             'first_name': forms.TextInput(attrs={
                 'class': 'form-control',
@@ -138,12 +115,39 @@ class UserProfileForm(forms.ModelForm):
                 'class': 'form-control',
                 'placeholder': 'Email Address'
             }),
+            'phone_number': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Phone Number'
+            }),
         }
+
     def clean_email(self):
-        """Validate email uniqueness (excluding current user)"""
         email = self.cleaned_data.get('email')
-        current_user = self.instance
-        if User.objects.filter(email=email).exclude(pk=current_user.pk).exists():
+        if User.objects.filter(email=email).exclude(pk=self.instance.pk).exists():
             raise ValidationError("A user with this email already exists.")
         return email
+
+
+class CustomPasswordChangeForm(PasswordChangeForm):
+    """Custom styled password change form"""
     
+    old_password = forms.CharField(
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Current password'
+        })
+    )
+    
+    new_password1 = forms.CharField(
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'New password'
+        })
+    )
+    
+    new_password2 = forms.CharField(
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Confirm new password'
+        })
+    )

@@ -13,12 +13,14 @@ ALLOWED_HOSTS = []
 # Installed apps
 INSTALLED_APPS = [
     'django.contrib.admin',
+    'accounts.apps.AccountsConfig',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'booking',  # your custom app
+
 ]
 
 MIDDLEWARE = [
@@ -44,6 +46,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'booking.context_processors.room_types',
             ],
         },
     },
@@ -60,10 +63,10 @@ DATABASES = {
         'PASSWORD': '123456',
         'HOST': 'localhost',
         'PORT': '3307',
-         'OPTIONS': {
-             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-             'charset': 'utf8mb4',
-         },
+        #  'OPTIONS': {
+        #      'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+        #      'charset': 'utf8mb4',
+        #  },
     }
 }
 
@@ -102,6 +105,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # ✅ Custom user model
 AUTH_USER_MODEL = 'booking.CustomUser'
+AUTH_USER_MODEL = 'accounts.User' 
 
 # ✅ Auth redirect settings
 LOGIN_URL = '/accounts/login/'

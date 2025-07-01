@@ -2,9 +2,9 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.utils.html import format_html
-from .models import CustomUser, Room, Booking, BookingRule, Announcement
+from .models import Room, Booking, BookingRule, Announcement
 
-@admin.register(CustomUser)
+# @admin.register(CustomUser)
 class CustomUserAdmin(UserAdmin):
     """Admin configuration for CustomUser"""
     

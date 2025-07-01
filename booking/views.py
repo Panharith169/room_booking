@@ -1,14 +1,21 @@
+# Phase four
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib import messages
 from django.core.paginator import Paginator
-from django.db.models import Q
-from django.http import JsonResponse
+from django.db.models import Q, Count
+from django.http import JsonResponse, HttpResponse
 from django.utils import timezone
-from datetime import datetime, timedelta
-from .models import Room, Booking
-from .forms import RoomForm, RoomSearchForm
+from django.views.decorators.http import require_http_methods
+from django.views.decorators.csrf import csrf_exempt
+from datetime import datetime, timedelta, time
+from .models import Room, Booking, BookingRule
+from .forms import (
+    RoomForm, RoomSearchForm, BookingForm, BookingSearchForm, 
+    QuickBookingForm, BookingRuleForm, BulkBookingForm
+)
+import json
 
 
 @login_required
@@ -181,6 +188,15 @@ def room_toggle_status(request, room_id):
     
     return redirect('bookings:room_detail', room_id=room_id)
 
+@staff_member_required
+def admin_room_list(request):
+    """Admin view for managing all rooms"""
+    rooms = Room.objects.all().order_by('room_number')
+    context = {
+        'rooms': rooms
+    }
+    return render(request, 'bookings/admin_room_list.html', context)
+
 
 @staff_member_required
 def room_delete(request, room_id):
@@ -265,3 +281,5 @@ def check_room_availability(request):
             return JsonResponse({'error': 'Invalid date/time format'}, status=400)
     
     return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+# Phase five: 
