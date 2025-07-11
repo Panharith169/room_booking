@@ -1,0 +1,350 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ action|title }} Room | RUPP Room Booking System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'AdminPage/css/adminHomePage.css' %}">
+    <link rel="stylesheet" href="{% static 'AdminPage/css/manageRooms.css' %}">
+    <link rel="stylesheet" href="{% static 'AdminPage/css/admin_room_form.css' %}">
+    <style>
+        /* Additional custom styles for room form */
+        .main-content {
+            margin-top: 20px;
+        }
+        
+        .form-label.required::after {
+            content: " *";
+            color: #dc3545;
+        }
+        
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            font-weight: 600;
+            padding: 12px 30px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            border: none;
+            font-weight: 600;
+            padding: 12px 30px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+        
+        .form-check-input:checked {
+            background-color: #667eea;
+            border-color: #667eea;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    {% include 'AdminPage/includes/admin_header.html' %}
+
+    <!-- Messages -->
+    {% if messages %}
+        <div class="container mt-3">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="container">
+            <!-- Page Header -->
+            <div class="page-header">
+                <h2>
+                    <i class="fas fa-{% if action == 'add' %}plus{% else %}edit{% endif %} me-2"></i>
+                    {{ action|title }} Room
+                </h2>
+                <p class="text-muted">{% if action == 'add' %}Add a new room to the system{% else %}Edit room details{% endif %}</p>
+            </div>
+
+            <!-- Form Card -->
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h4 class="mb-0">
+                                    <i class="fas fa-door-open me-2"></i>
+                                    Room Information
+                                </h4>
+                                <nav aria-label="breadcrumb">
+                                    <ol class="breadcrumb mb-0">
+                                        <li class="breadcrumb-item"><a href="{% url 'accounts:admin_dashboard' %}">Dashboard</a></li>
+                                        <li class="breadcrumb-item"><a href="{% url 'accounts:manage_rooms' %}">Manage Rooms</a></li>
+                                        <li class="breadcrumb-item active">{{ action|title }} Room</li>
+                                    </ol>
+                                </nav>
+                            </div>
+                        </div>
+                        <div class="card-body p-4">
+                            <form method="POST" enctype="multipart/form-data" id="roomForm">
+                                {% csrf_token %}
+                                <!-- Basic Information -->
+                                <div class="row mb-4">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="room_name" class="form-label required">
+                                                <i class="fas fa-door-open me-2"></i>Room Name
+                                            </label>
+                                            <input type="text" class="form-control" id="room_name" name="room_name" 
+                                                   value="{{ room.name|default:'' }}" required
+                                                   placeholder="e.g., Conference Room A">
+                                            <div class="form-text">Enter a descriptive name for the room</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="room_number" class="form-label required">
+                                                <i class="fas fa-hashtag me-2"></i>Room Number
+                                            </label>
+                                            <input type="text" class="form-control" id="room_number" name="room_number" 
+                                                   value="{{ room.room_number|default:'' }}" required
+                                                   placeholder="e.g., A-201">
+                                            <div class="form-text">Unique identifier for the room</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Room Type and Capacity -->
+                                <div class="row mb-4">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="room_type" class="form-label required">
+                                                <i class="fas fa-building me-2"></i>Room Type
+                                            </label>
+                                            <select class="form-select" id="room_type" name="room_type" required>
+                                                <option value="">Select Room Type</option>
+                                                {% for value, label in room_types %}
+                                                    <option value="{{ value }}" 
+                                                            {% if room.room_type == value %}selected{% endif %}>
+                                                        {{ label }}
+                                                    </option>
+                                                {% endfor %}
+                                            </select>
+                                            <div class="form-text">Choose the type of room</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="capacity" class="form-label required">
+                                                <i class="fas fa-users me-2"></i>Capacity
+                                            </label>
+                                            <div class="input-group">
+                                                <input type="number" class="form-control" id="capacity" name="capacity" 
+                                                       value="{{ room.capacity|default:'' }}" min="1" max="1000" required
+                                                       placeholder="e.g., 25">
+                                                <span class="input-group-text">people</span>
+                                            </div>
+                                            <div class="form-text">Maximum number of people the room can accommodate</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Description -->
+                                <div class="form-group mb-4">
+                                    <label for="description" class="form-label">
+                                        <i class="fas fa-align-left me-2"></i>Description
+                                    </label>
+                                    <textarea class="form-control" id="description" name="description" 
+                                              rows="3" placeholder="Brief description of the room...">{{ room.description|default:'' }}</textarea>
+                                    <div class="form-text">Optional description of the room and its features</div>
+                                </div>
+
+                                <!-- Equipment -->
+                                <div class="form-group mb-4">
+                                    <label for="equipment" class="form-label">
+                                        <i class="fas fa-tools me-2"></i>Equipment & Facilities
+                                    </label>
+                                    <textarea class="form-control" id="equipment" name="equipment" 
+                                              rows="4" placeholder="List available equipment (e.g., Projector, Whiteboard, Audio System...)">{{ room.equipment|default:'' }}</textarea>
+                                    <div class="form-text">List all available equipment and facilities in the room</div>
+                                </div>
+
+                                <!-- Availability Status -->
+                                <div class="form-group mb-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="is_available" name="is_available" 
+                                               {% if room.is_available or not room %}checked{% endif %}>
+                                        <label class="form-check-label" for="is_available">
+                                            <i class="fas fa-check-circle me-2"></i>
+                                            <strong>Room is available for booking</strong>
+                                        </label>
+                                    </div>
+                                    <div class="form-text">Uncheck this if the room is temporarily unavailable</div>
+                                </div>
+
+                                <!-- Action Buttons -->
+                                <div class="d-flex justify-content-between pt-3">
+                                    <a href="{% url 'accounts:manage_rooms' %}" class="btn btn-secondary">
+                                        <i class="fas fa-arrow-left me-2"></i>Back to Rooms
+                                    </a>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save me-2"></i>
+                                        {% if action == 'add' %}Add Room{% else %}Update Room{% endif %}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Form validation and enhancement
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('roomForm');
+            const submitBtn = form.querySelector('button[type="submit"]');
+            
+            // Real-time validation
+            const requiredFields = form.querySelectorAll('input[required], select[required]');
+            
+            requiredFields.forEach(field => {
+                field.addEventListener('input', function() {
+                    validateField(this);
+                });
+                
+                field.addEventListener('blur', function() {
+                    validateField(this);
+                });
+            });
+            
+            function validateField(field) {
+                const value = field.value.trim();
+                const isValid = field.checkValidity();
+                
+                // Remove existing validation classes
+                field.classList.remove('is-valid', 'is-invalid');
+                
+                // Add appropriate validation class
+                if (value && isValid) {
+                    field.classList.add('is-valid');
+                } else if (!isValid) {
+                    field.classList.add('is-invalid');
+                }
+            }
+            
+            // Form submission
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Validate all fields
+                let isFormValid = true;
+                requiredFields.forEach(field => {
+                    validateField(field);
+                    if (!field.checkValidity()) {
+                        isFormValid = false;
+                    }
+                });
+                
+                if (isFormValid) {
+                    // Show loading state
+                    submitBtn.classList.add('loading');
+                    submitBtn.disabled = true;
+                    
+                    // Submit the form
+                    setTimeout(() => {
+                        form.submit();
+                    }, 500);
+                } else {
+                    // Show error message
+                    alert('Please fill in all required fields correctly.');
+                }
+            });
+            
+            // Auto-generate room number suggestion
+            const nameField = document.getElementById('name');
+            const roomNumberField = document.getElementById('room_number');
+            
+            nameField.addEventListener('input', function() {
+                if (!roomNumberField.value) {
+                    const suggestion = generateRoomNumber(this.value);
+                    roomNumberField.placeholder = suggestion;
+                }
+            });
+            
+            function generateRoomNumber(name) {
+                const words = name.split(' ');
+                const initials = words.map(word => word.charAt(0).toUpperCase()).join('');
+                return `${initials}-${Math.floor(Math.random() * 900) + 100}`;
+            }
+            
+            // Capacity input formatting
+            const capacityField = document.getElementById('capacity');
+            capacityField.addEventListener('input', function() {
+                const value = parseInt(this.value);
+                if (value > 1000) {
+                    this.value = 1000;
+                } else if (value < 1) {
+                    this.value = 1;
+                }
+            });
+        });
+        
+        // Show confirmation before leaving with unsaved changes
+        let formChanged = false;
+        
+        document.getElementById('roomForm').addEventListener('input', function() {
+            formChanged = true;
+        });
+        
+        window.addEventListener('beforeunload', function(e) {
+            if (formChanged) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+    </script>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p>All Rights Reserved, Copyright © 2025 Royal University of Phnom Penh (RUPP)</p>
+            <p>Russian Federation Boulevard, Toul Kork, Phnom Penh, Cambodia. Tel: 855-972 274 936</p>
+            <p>Designed by: DSE TEAM</p>
+        </div>
+    </footer>
+</body>
+</html>

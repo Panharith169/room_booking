@@ -18,6 +18,7 @@ class UserManager(BaseUserManager):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
         extra_fields.setdefault('is_active', True)
+        extra_fields.setdefault('is_admin', True)
 
         if extra_fields.get('is_staff') is not True:
             raise ValueError('Superuser must have is_staff=True.')
@@ -40,20 +41,53 @@ class User(AbstractUser):
         max_length=20,
         unique=True,
         validators=[RegexValidator(
-            regex=r'^\d{8,12}$',
-            message='Student ID must be 8-12 digits'
+            regex=r'^[A-Z0-9]{6,20}$',  # Made more flexible for your frontend
+            message='Student ID must be 6-20 characters (letters and numbers)'
         )],
-        help_text='8-12 digit student identification number'
+        help_text='6-20 character student identification',
+        blank=True  # Allow blank for admin accounts
     )
 
     phone_number = models.CharField(
         'Phone Number',
-        max_length=15,
+        max_length=20,  # Increased for international formats
         validators=[RegexValidator(
-            regex=r'^\+?1?\d{9,15}$',
-            message='Phone number must be 9-15 digits'
+            regex=r'^\+?[\d\s\-\(\)]{9,20}$',  # More flexible format
+            message='Phone number must be valid format'
         )],
-        help_text='Format: +999999999'
+        help_text='Format: +999999999 or 999-999-9999',
+        blank=True
+    )
+
+    is_admin = models.BooleanField(
+        'Admin status',
+        default=False,
+        help_text='Designates administrative privileges (different from staff status)'
+    )
+
+    FACULTY_CHOICES = [
+        ('science', 'Faculty of Science'),
+        ('engineering', 'Faculty of Engineering'),
+        ('social', 'Faculty of Social Sciences'),
+        ('business', 'Faculty of Business'),
+        ('education', 'Faculty of Education'),
+        ('arts', 'Faculty of Arts'),
+        ('law', 'Faculty of Law'),
+        ('medicine', 'Faculty of Medicine'),
+        ('agriculture', 'Faculty of Agriculture'),
+    ]
+    
+    faculty = models.CharField(
+        'Faculty',
+        max_length=50,
+        choices=FACULTY_CHOICES,
+        blank=True
+    )
+    
+    department = models.CharField(
+        'Department',
+        max_length=100,  # Increased for longer department names
+        blank=True
     )
 
     is_staff = models.BooleanField(
@@ -66,7 +100,7 @@ class User(AbstractUser):
     updated_at = models.DateTimeField('Updated At', auto_now=True)
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['student_id', 'phone_number']
+    REQUIRED_FIELDS = ['first_name', 'last_name']  # Made more flexible
 
     objects = UserManager()
 
@@ -77,10 +111,28 @@ class User(AbstractUser):
         verbose_name_plural = 'Users'
 
     def __str__(self):
-        return f"{self.email} ({self.student_id})"
+        return f"{self.email} ({self.get_full_name()})"
 
     def get_full_name(self):
         return f"{self.first_name} {self.last_name}".strip()
 
     def get_short_name(self):
         return self.first_name
+    
+    def get_student_display_id(self):
+        """Return student ID or generate one if missing"""
+        if self.student_id:
+            return self.student_id
+        return f"USR{self.id:06d}"
+    
+    def get_phone_display(self):
+        """Return phone number or default"""
+        return self.phone_number or "000-000-0000"
+    
+    def is_regular_user(self):
+        """Check if user is a regular user (not admin)"""
+        return not self.is_admin and not self.is_staff
+    
+    def is_admin_user(self):
+        """Check if user is admin"""
+        return self.is_admin or self.is_staff or self.is_superuser

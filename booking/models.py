@@ -6,130 +6,10 @@ from django.utils import timezone
 from django.contrib.auth.models import AbstractUser
 from datetime import timedelta, datetime, time
 
-# class CustomUser(AbstractUser):
-#     """Extended User model with additional fields"""
-    
-#     USER_TYPES = [
-#         ('student', 'Student'),
-#         ('faculty', 'Faculty'),
-#         ('staff', 'Staff'),
-#         ('admin', 'Administrator'),
-#     ]
-    
-#     # Additional fields
-#     user_type = models.CharField(
-#         max_length=20,
-#         choices=USER_TYPES,
-#         default='student',
-#         help_text='Type of user'
-#     )
-    
-#     student_id = models.CharField(
-#         max_length=20,
-#         blank=True,
-#         null=True,
-#         unique=True,
-#         help_text='Student ID number (for students)'
-#     )
-    
-#     employee_id = models.CharField(
-#         max_length=20,
-#         blank=True,
-#         null=True,
-#         unique=True,
-#         help_text='Employee ID number (for faculty/staff)'
-#     )
-    
-#     phone_number = models.CharField(
-#         max_length=15,
-#         blank=True,
-#         validators=[
-#             RegexValidator(
-#                 regex=r'^\+?1?\d{9,15}$',
-#                 message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed."
-#             )
-#         ],
-#         help_text='Contact phone number'
-#     )
-    
-#     department = models.CharField(
-#         max_length=100,
-#         blank=True,
-#         help_text='Department or faculty'
-#     )
-    
-#     is_approved = models.BooleanField(
-#         default=False,
-#         help_text='Whether the user account is approved for booking'
-#     )
-    
-#     max_concurrent_bookings = models.PositiveIntegerField(
-#         default=2,
-#         help_text='Maximum number of concurrent active bookings allowed'
-#     )
-    
-#     created_at = models.DateTimeField(auto_now_add=True)
-#     updated_at = models.DateTimeField(auto_now=True)
-    
-#     class Meta:
-#         db_table = 'custom_users'
-#         verbose_name = 'User'
-#         verbose_name_plural = 'Users'
-#         indexes = [
-#             models.Index(fields=['user_type']),
-#             models.Index(fields=['is_approved']),
-#             models.Index(fields=['student_id']),
-#             models.Index(fields=['employee_id']),
-#         ]
-    
-#     def clean(self):
-#         """Custom validation"""
-#         # Validate student_id for students
-#         if self.user_type == 'student' and not self.student_id:
-#             raise ValidationError({'student_id': 'Student ID is required for students.'})
-        
-#         # Validate employee_id for faculty/staff
-#         if self.user_type in ['faculty', 'staff'] and not self.employee_id:
-#             raise ValidationError({'employee_id': 'Employee ID is required for faculty and staff.'})
-        
-#         # Clear irrelevant IDs
-#         if self.user_type != 'student':
-#             self.student_id = None
-#         if self.user_type not in ['faculty', 'staff']:
-#             self.employee_id = None
-    
-#     def save(self, *args, **kwargs):
-#         self.clean()
-#         super().save(*args, **kwargs)
-    
-#     def get_display_name(self):
-#         """Return display name for the user"""
-#         if self.get_full_name():
-#             return self.get_full_name()
-#         return self.username
-    
-#     def get_identifier(self):
-#         """Return the appropriate ID for the user type"""
-#         if self.user_type == 'student' and self.student_id:
-#             return self.student_id
-#         elif self.user_type in ['faculty', 'staff'] and self.employee_id:
-#             return self.employee_id
-#         return self.username
-    
-#     def can_make_booking(self):
-#         """Check if user can make bookings"""
-#         return self.is_active and self.is_approved
-    
-#     def __str__(self):
-#         name = self.get_display_name()
-#         identifier = self.get_identifier()
-#         if identifier != name:
-#             return f"{name} ({identifier})"
-#         return name
-
 
 class Room(models.Model):
     """Room model for managing bookable rooms"""
+    image = models.ImageField(upload_to='room_images/', blank=True, null=True)
     
     ROOM_TYPES = [
         ('classroom', 'Classroom'),
@@ -188,7 +68,7 @@ class Room(models.Model):
         help_text='Current availability status'
     )
     
-    is_active = models.BooleanField(
+    is_available = models.BooleanField(
         default=True,
         help_text='Whether the room is active and bookable'
     )
@@ -204,7 +84,7 @@ class Room(models.Model):
         indexes = [
             models.Index(fields=['room_type']),
             models.Index(fields=['availability_status']),
-            models.Index(fields=['is_active']),
+            models.Index(fields=['is_available']),
         ]
     
     def clean(self):
@@ -221,12 +101,12 @@ class Room(models.Model):
     
     def is_bookable(self):
         """Check if room is available for booking"""
-        return self.is_active and self.availability_status == 'available'
+        return self.is_available and self.availability_status == 'available'
     
     def get_absolute_url(self):
         """Get the URL for this room's detail page"""
         from django.urls import reverse
-        return reverse('booking:room_detail', kwargs={'room_id': self.id})
+        return reverse('bookings:room_detail', kwargs={'room_id': self.id})
     
     def is_available_at(self, start_datetime, end_datetime):
         """Check if room is available at given datetime range"""
@@ -275,19 +155,19 @@ class BookingRule(models.Model):
         help_text='Maximum booking duration in hours'
     )
     
-    max_daily_bookings = models.PositiveIntegerField(
+    daily_booking_limit = models.PositiveIntegerField(
         default=2,
         validators=[MinValueValidator(1), MaxValueValidator(10)],
         help_text='Maximum bookings per user per day'
     )
     
-    max_weekly_bookings = models.PositiveIntegerField(
+    weekly_booking_limit = models.PositiveIntegerField(
         default=5,
         validators=[MinValueValidator(1), MaxValueValidator(50)],
         help_text='Maximum bookings per user per week'
     )
     
-    advance_booking_days = models.PositiveIntegerField(
+    max_advance_days = models.PositiveIntegerField(
         default=14,
         validators=[MinValueValidator(1), MaxValueValidator(365)],
         help_text='How many days in advance users can book'
@@ -297,6 +177,18 @@ class BookingRule(models.Model):
         default=2,
         validators=[MinValueValidator(0), MaxValueValidator(168)],
         help_text='Minimum hours in advance required for booking'
+    )
+    
+    min_cancel_hours = models.PositiveIntegerField(
+        default=2,
+        validators=[MinValueValidator(0), MaxValueValidator(168)],
+        help_text='Minimum hours in advance required for cancellation'
+    )
+    
+    min_modify_hours = models.PositiveIntegerField(
+        default=2,
+        validators=[MinValueValidator(0), MaxValueValidator(168)],
+        help_text='Minimum hours in advance required for modification'
     )
     
     booking_start_time = models.TimeField(
@@ -339,6 +231,52 @@ class BookingRule(models.Model):
         self.clean()
         super().save(*args, **kwargs)
     
+    def check_user_can_book(self, user, booking_datetime):
+        """Check if user can make a booking at the given datetime"""
+        errors = []
+        
+        # Check advance booking limit
+        advance_time = booking_datetime - timezone.now()
+        if advance_time.days > self.max_advance_days:
+            errors.append(f"Bookings can only be made {self.max_advance_days} days in advance.")
+        
+        # Check daily limit
+        # booking_date = booking_datetime.date()
+        # daily_bookings = Booking.objects.filter(
+        #     user=user,
+        #     start_time__date=booking_date,
+        #     status__in=['pending', 'confirmed']
+        # ).count()
+        
+        # if daily_bookings >= self.daily_booking_limit:
+        #     errors.append(f"Daily booking limit of {self.daily_booking_limit} reached.")
+        
+        # Check weekly limit
+        # week_start = booking_date - timedelta(days=booking_date.weekday())
+        # week_end = week_start + timedelta(days=6)
+        
+        # weekly_bookings = Booking.objects.filter(
+        #     user=user,
+        #     start_time__date__range=[week_start, week_end],
+        #     status__in=['pending', 'confirmed']
+        # ).count()
+        
+        # if weekly_bookings >= self.weekly_booking_limit:
+        #     errors.append(f"Weekly booking limit of {self.weekly_booking_limit} reached.")
+        
+        # return errors
+
+    def can_cancel_booking(self, booking):
+        """Check if booking can be cancelled based on rules"""
+        if not self.min_cancel_hours:
+            return True, ""
+        
+        time_until_booking = booking.start_time - timezone.now()
+        if time_until_booking.total_seconds() < self.min_cancel_hours * 3600:
+            return False, f"Bookings can only be cancelled {self.min_cancel_hours} hours in advance."
+        
+        return True, ""
+    
     def __str__(self):
         return f"{self.name} ({'Active' if self.is_active else 'Inactive'})"
 
@@ -376,46 +314,6 @@ class BookingManager(models.Manager):
 
 class Booking(models.Model):
     """Booking model for room reservations"""
-    def can_be_cancelled(self):
-        """Check if booking can be cancelled based on time restrictions"""
-        try:
-            rules = BookingRule.objects.get(id=1)
-            time_until_start = self.start_time - timezone.now()
-            return time_until_start >= timedelta(hours=rules.min_cancellation_hours)
-        except BookingRule.DoesNotExist:
-            return True  # Allow cancellation if no rules
-    
-    def can_be_modified(self):
-        """Check if booking can be modified"""
-        return self.status == 'pending' and self.can_be_cancelled()
-    
-    def get_cancellation_deadline(self):
-        """Get the deadline for cancellation"""
-        try:
-            rules = BookingRule.objects.get(id=1)
-            return self.start_time - timedelta(hours=rules.min_cancellation_hours)
-        except BookingRule.DoesNotExist:
-            return self.start_time
-    
-    def clean(self):
-        """Model validation"""
-        super().clean()
-        
-        # Validate end time after start time
-        if self.end_time <= self.start_time:
-            raise ValidationError("End time must be after start time.")
-        
-        # Check for booking conflicts
-        conflicting_bookings = Booking.objects.filter(
-            room=self.room,
-            status__in=['confirmed', 'pending'],
-            start_time__lt=self.end_time,
-            end_time__gt=self.start_time
-        ).exclude(pk=self.pk)
-        
-        if conflicting_bookings.exists():
-            raise ValidationError("This time slot conflicts with an existing booking.")
-
     
     STATUS_CHOICES = [
         ('pending', 'Pending'),
@@ -438,6 +336,7 @@ class Booking(models.Model):
         related_name='bookings',
         help_text='Room being booked'
     )
+    attendees = models.IntegerField(default=1)  # Add this if you want attendees
     
     start_time = models.DateTimeField(
         help_text='Booking start date and time'
@@ -466,8 +365,6 @@ class Booking(models.Model):
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
-    
     
     # Custom manager
     objects = BookingManager()
@@ -564,12 +461,39 @@ class Booking(models.Model):
         return (self.status in ['pending', 'confirmed'] and 
                 self.start_time > timezone.now())
     
+    def can_be_cancelled(self):
+        """Check if booking can be cancelled based on time restrictions"""
+        try:
+            rules = BookingRule.objects.filter(is_active=True).first()
+            if rules:
+                time_until_start = self.start_time - timezone.now()
+                return time_until_start >= timedelta(hours=rules.min_cancel_hours)
+            return True  # Allow cancellation if no rules
+        except:
+            return True
+    
+    def can_be_modified(self):
+        """Check if booking can be modified"""
+        return self.status == 'pending' and self.can_be_cancelled()
+    
+    def get_cancellation_deadline(self):
+        """Get the deadline for cancellation"""
+        try:
+            rules = BookingRule.objects.filter(is_active=True).first()
+            if rules:
+                return self.start_time - timedelta(hours=rules.min_cancel_hours)
+            return self.start_time
+        except:
+            return self.start_time
+    
     def __str__(self):
         return f"{self.room.name} - {self.user.get_full_name()} ({self.start_time.strftime('%Y-%m-%d %H:%M')})"
 
 
 class Announcement(models.Model):
     """Model for admin announcements"""
+    # In booking/models.py
+    expires_at = models.DateTimeField(null=True, blank=True)
     
     ANNOUNCEMENT_TYPES = [
         ('general', 'General'),
@@ -688,10 +612,10 @@ def validate_booking_time_slot(start_time, end_time):
             )
         
         # Check advance booking limit
-        advance_limit = timezone.now() + timedelta(days=rule.advance_booking_days)
+        advance_limit = timezone.now() + timedelta(days=rule.max_advance_days)
         if start_time > advance_limit:
             raise ValidationError(
-                f'Cannot book more than {rule.advance_booking_days} days in advance'
+                f'Cannot book more than {rule.max_advance_days} days in advance'
             )
         
         # Check minimum advance time
@@ -707,15 +631,3 @@ def validate_booking_time_slot(start_time, end_time):
         raise ValidationError(f'Booking validation error: {str(e)}')
 
 
-# Migration commands to run:
-"""
-# Create and apply migrations
-python manage.py makemigrations
-python manage.py migrate
-
-# Create superuser
-python manage.py createsuperuser
-
-# Test database connection
-python manage.py shell
-"""

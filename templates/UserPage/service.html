@@ -1,0 +1,360 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service & Support | RUPP Room Booking</title>
+    <link rel="stylesheet" href="{% static 'UserPage/css/service.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="{% static 'UserPage/js/service.js' %}" defer></script>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <img src="https://upload.wikimedia.org/wikipedia/km/e/ee/Rupp_logo.png?20090803154844" alt="RUPP Logo">
+            <div>Royal University of Phnom Penh</div>
+        </div>
+
+        <div class="nav">
+            <a href="{% url 'accounts:user_dashboard' %}" class="nav-item">Home</a>
+            <a href="{% url 'accounts:booking' %}" class="nav-item">Booking</a>
+            <a href="{% url 'accounts:booked' %}" class="nav-item">Booked</a>
+            <a href="{% url 'accounts:setting' %}" class="nav-item">Setting</a>
+            <a href="{% url 'accounts:about_us' %}" class="nav-item">About us</a>
+            <a href="{% url 'accounts:service' %}" class="nav-item active">Service</a>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="hero-content">
+            <h1><i class="fas fa-headset"></i> Service & Support</h1>
+            <p>We're here to help you with all your room booking needs</p>
+        </div>
+    </section>
+
+    <!-- Service Page -->
+    <main id="service">
+        <!-- Quick Help Section -->
+        <section class="quick-help">
+            <h2><i class="fas fa-question-circle"></i> Quick Help</h2>
+            <div class="help-cards">
+                <div class="help-card">
+                    <div class="help-icon">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <h3>How to Book a Room</h3>
+                    <p>Step-by-step guide to booking your perfect room</p>
+                    <a href="#booking-guide" class="help-link">Learn More</a>
+                </div>
+                <div class="help-card">
+                    <div class="help-icon">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <h3>Manage Bookings</h3>
+                    <p>View, modify, or cancel your existing bookings</p>
+                    <a href="{% url 'accounts:booked' %}" class="help-link">View Bookings</a>
+                </div>
+                <div class="help-card">
+                    <div class="help-icon">
+                        <i class="fas fa-user-cog"></i>
+                    </div>
+                    <h3>Account Settings</h3>
+                    <p>Update your profile and preferences</p>
+                    <a href="{% url 'accounts:setting' %}" class="help-link">Settings</a>
+                </div>
+                <div class="help-card">
+                    <div class="help-icon">
+                        <i class="fas fa-phone"></i>
+                    </div>
+                    <h3>Contact Support</h3>
+                    <p>Get help from our support team</p>
+                    <a href="#contact" class="help-link">Contact Us</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ Section -->
+        <section class="faq-section">
+            <h2><i class="fas fa-question-circle"></i> Frequently Asked Questions</h2>
+            <div class="faq-container">
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFAQ(this)">
+                        <h3>How do I book a room?</h3>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>To book a room, navigate to the Booking page, select your preferred room type, date, and time. Fill in the required information and submit your booking request. You'll receive a confirmation email once approved.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFAQ(this)">
+                        <h3>Can I cancel or modify my booking?</h3>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Yes, you can cancel or modify your booking up to 24 hours before the scheduled time. Go to your Booked page and select the booking you want to change.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFAQ(this)">
+                        <h3>What are the room booking policies?</h3>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Rooms must be booked at least 2 hours in advance. Maximum booking duration is 4 hours. Late cancellations may result in booking restrictions. Please respect the facilities and clean up after use.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFAQ(this)">
+                        <h3>How do I reset my password?</h3>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Go to the Settings page and select "Change Password". You'll need to enter your current password and set a new one. Make sure your new password meets the security requirements.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section class="contact-section" id="contact">
+            <h2><i class="fas fa-envelope"></i> Contact Information</h2>
+            <div class="contact-grid">
+                <div class="contact-card left">
+                    <h3><i class="fas fa-info-circle"></i> Contact Information</h3>
+                    <div class="contact-info">
+                        <div class="contact-item">
+                            <i class="fas fa-phone"></i>
+                            <div>
+                                <strong>Phone Number</strong>
+                                <p>+855-972-274-4936</p>
+                            </div>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-envelope"></i>
+                            <div>
+                                <strong>Email Address</strong>
+                                <p>roombooking@rupp.edu.kh</p>
+                            </div>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <div>
+                                <strong>Office Location</strong>
+                                <p>DSE Support Office<br>Building STEM, Room 306</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3><i class="fas fa-link"></i> Quick Links</h3>
+                    <ul class="quick-links">
+                        <li><a href="{% url 'accounts:user_dashboard' %}"><i class="fas fa-home"></i> Home</a></li>
+                        <li><a href="{% url 'accounts:about_us' %}"><i class="fas fa-users"></i> About Us</a></li>
+                        <li><a href="{% url 'accounts:booking' %}"><i class="fas fa-calendar-check"></i> Room Booking</a></li>
+                        <li><a href="{% url 'accounts:booked' %}"><i class="fas fa-list"></i> My Bookings</a></li>
+                        <li><a href="#faq"><i class="fas fa-question-circle"></i> Help / FAQ</a></li>
+                        <li><a href="{% url 'admin:index' %}"><i class="fas fa-user-shield"></i> Admin Login</a></li>
+                    </ul>
+                </div>
+
+                <div class="contact-card right">
+                    <h3><i class="fas fa-clock"></i> Support Hours</h3>
+                    <div class="support-hours">
+                        <div class="hours-item">
+                            <strong>Regular Support</strong>
+                            <p>Monday - Friday: 8:00 AM - 5:00 PM</p>
+                        </div>
+                        <div class="hours-item">
+                            <strong>Weekend Support</strong>
+                            <p>Saturday: 9:00 AM - 2:00 PM</p>
+                        </div>
+                        <div class="hours-item">
+                            <strong>Emergency Support</strong>
+                            <p>24/7 for urgent issues</p>
+                        </div>
+                    </div>
+
+                    <h3><i class="fas fa-shield-alt"></i> Legal & Policy</h3>
+                    <ul class="policy-links">
+                        <li><a href="#privacy"><i class="fas fa-lock"></i> Privacy Policy</a></li>
+                        <li><a href="#terms"><i class="fas fa-file-contract"></i> Terms of Use</a></li>
+                        <li><a href="#cookies"><i class="fas fa-cookie"></i> Cookie Policy</a></li>
+                    </ul>
+
+                    <h3><i class="fas fa-share-alt"></i> Follow Us</h3>
+                    <div class="social-media">
+                        <a href="https://facebook.com/rupp.edu.kh" target="_blank" class="social-link facebook">
+                            <i class="fab fa-facebook"></i>
+                            <span>Facebook</span>
+                        </a>
+                        <a href="https://t.me/rupp_official" target="_blank" class="social-link telegram">
+                            <i class="fab fa-telegram"></i>
+                            <span>Telegram</span>
+                        </a>
+                        <a href="https://twitter.com/rupp_official" target="_blank" class="social-link twitter">
+                            <i class="fab fa-twitter"></i>
+                            <span>Twitter</span>
+                        </a>
+                        <a href="https://instagram.com/rupp_official" target="_blank" class="social-link instagram">
+                            <i class="fab fa-instagram"></i>
+                            <span>Instagram</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Booking Guide Section -->
+        <section class="booking-guide" id="booking-guide">
+            <h2><i class="fas fa-graduation-cap"></i> Room Booking Guide</h2>
+            <div class="guide-steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>Choose Your Room</h3>
+                        <p>Browse available rooms by type, capacity, and features. Use filters to find the perfect match for your needs.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>Select Date & Time</h3>
+                        <p>Pick your preferred date and time slot. Check availability in real-time and select duration.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>Fill Booking Details</h3>
+                        <p>Complete the booking form with your information and purpose of use. Provide accurate details for approval.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h3>Confirm & Wait</h3>
+                        <p>Review your booking details and submit. You'll receive email confirmation once your booking is approved.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Form Section -->
+        <section class="contact-form-section">
+            <h2><i class="fas fa-paper-plane"></i> Send us a Message</h2>
+            <div class="contact-form-container">
+                <form class="contact-form" method="post" action="{% url 'accounts:contact_support' %}">
+                    {% csrf_token %}
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="name">Your Name</label>
+                            <input type="text" id="name" name="name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="subject">Subject</label>
+                        <select id="subject" name="subject" required>
+                            <option value="">Select a topic</option>
+                            <option value="booking">Booking Issue</option>
+                            <option value="technical">Technical Problem</option>
+                            <option value="account">Account Support</option>
+                            <option value="feature">Feature Request</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="message">Message</label>
+                        <textarea id="message" name="message" rows="5" required placeholder="Describe your issue or question..."></textarea>
+                    </div>
+                    <button type="submit" class="submit-btn">
+                        <i class="fas fa-paper-plane"></i> Send Message
+                    </button>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Royal University of Phnom Penh</h3>
+                <p>All Rights Reserved, Copyright © 2025</p>
+            </div>
+            <div class="footer-section">
+                <h3>Address</h3>
+                <p>Russian Federation Boulevard, Toul Kork<br>
+                Phnom Penh, Cambodia</p>
+            </div>
+            <div class="footer-section">
+                <h3>Contact</h3>
+                <p>Tel: +855-972-274-936<br>
+                Fax: +855-866-487-52</p>
+            </div>
+            <div class="footer-section">
+                <h3>Designed by</h3>
+                <p>DSE TEAM</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="{% static 'UserPage/js/service.js' %}"></script>
+    <script>
+        function toggleFAQ(element) {
+            const faqItem = element.parentElement;
+            const answer = faqItem.querySelector('.faq-answer');
+            const chevron = element.querySelector('.fas');
+            
+            // Toggle active class
+            faqItem.classList.toggle('active');
+            
+            // Toggle chevron direction
+            if (faqItem.classList.contains('active')) {
+                chevron.classList.remove('fa-chevron-down');
+                chevron.classList.add('fa-chevron-up');
+            } else {
+                chevron.classList.remove('fa-chevron-up');
+                chevron.classList.add('fa-chevron-down');
+            }
+        }
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Contact form submission
+        document.querySelector('.contact-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Show loading state
+            const submitBtn = this.querySelector('.submit-btn');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+            submitBtn.disabled = true;
+            
+            // Simulate form submission
+            setTimeout(() => {
+                alert('Thank you for your message! We will get back to you soon.');
+                this.reset();
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

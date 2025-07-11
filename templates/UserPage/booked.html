@@ -1,0 +1,188 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Bookings | RUPP Room Booking</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'UserPage/css/booked.css' %}">
+    <script src="{% static 'UserPage/js/booked.js' %}" defer></script>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <img src="https://upload.wikimedia.org/wikipedia/km/e/ee/Rupp_logo.png?20090803154844" alt="RUPP Logo">
+            <div>Royal University of Phnom Penh</div>
+        </div>
+        <div class="nav">
+            <a href="{% url 'accounts:user_dashboard' %}" class="nav-item">Home</a>
+            <a href="{% url 'accounts:booking' %}" class="nav-item">Booking</a>
+            <a href="{% url 'accounts:booked' %}" class="nav-item active">Booked</a>
+            <a href="{% url 'accounts:setting' %}" class="nav-item">Setting</a>
+            <a href="{% url 'accounts:about_us' %}" class="nav-item">About us</a>
+            <a href="{% url 'accounts:service' %}" class="nav-item">Service</a>
+        </div>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+        <div class="container mt-3">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <main>
+        <div class="container">
+        <div class="page-header">
+            <h1><i class="fas fa-calendar-check"></i> My Bookings</h1>
+            <p>View and manage your room bookings</p>
+        </div>
+
+        <!-- Booking Statistics -->
+        <div class="booking-stats">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>Total Bookings</h3>
+                    <p>{{ bookings|length }}</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>Pending</h3>
+                    <p>{{ pending_count|default:0 }}</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>Confirmed</h3>
+                    <p>{{ confirmed_count|default:0 }}</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-times-circle"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>Cancelled</h3>
+                    <p>{{ cancelled_count|default:0 }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bookings List -->
+        <div class="bookings-section">
+            <div class="section-header">
+                <h2>Your Bookings</h2>
+                <div class="filter-options">
+                    <select id="statusFilter" onchange="filterBookings()">
+                        <option value="">All Status</option>
+                        <option value="pending">Pending</option>
+                        <option value="confirmed">Confirmed</option>
+                        <option value="cancelled">Cancelled</option>
+                        <option value="completed">Completed</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="bookings-grid" id="bookingsGrid">
+                {% for booking in bookings %}
+                    <div class="booking-card" data-status="{{ booking.status }}">
+                        <div class="booking-header">
+                            <h3>{{ booking.room.name }}</h3>
+                            <span class="booking-status status-{{ booking.status }}">
+                                {% if booking.status == 'pending' %}
+                                    <i class="fas fa-clock"></i> Pending
+                                {% elif booking.status == 'confirmed' %}
+                                    <i class="fas fa-check-circle"></i> Confirmed
+                                {% elif booking.status == 'cancelled' %}
+                                    <i class="fas fa-ban"></i> Cancelled
+                                {% elif booking.status == 'completed' %}
+                                    <i class="fas fa-check-circle"></i> Completed
+                                {% else %}
+                                    <i class="fas fa-info-circle"></i> {{ booking.status|capfirst }}
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="booking-details">
+                            <div class="detail-item">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>{{ booking.room.room_number }}</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-calendar"></i>
+                                <span>{{ booking.start_time|date:"M d, Y" }}</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-clock"></i>
+                                <span>{{ booking.start_time|time:"H:i" }} - {{ booking.end_time|time:"H:i" }}</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-clipboard"></i>
+                                <span>{{ booking.purpose }}</span>
+                            </div>
+                        </div>
+                        <div class="booking-actions">
+                            <button class="btn btn-info" onclick="viewBooking({{ booking.id }})">
+                                <i class="fas fa-eye"></i> View Details
+                            </button>
+                            {% if booking.status == 'pending' or booking.status == 'confirmed' %}
+                                <button class="btn btn-danger" onclick="cancelBooking({{ booking.id }})">
+                                    <i class="fas fa-ban"></i> Cancel
+                                </button>
+                            {% endif %}
+                        </div>
+                    </div>
+            {% empty %}
+            <div class="no-bookings">
+                <div class="no-bookings-icon">📅</div>
+                <h3>No Bookings Found</h3>
+                <p>You haven't made any bookings yet. Start by booking a room!</p>
+                <button onclick="window.location.href='{% url 'accounts:booking' %}'" class="book-now-btn">
+                    Book a Room
+                </button>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="button-row">
+        <button onclick="window.history.back()">Back</button>
+        <button onclick="window.location.href='{% url 'accounts:booking' %}'">New Booking</button>
+    </div>
+</div>
+</main>
+
+    <!-- Cancel Booking Modal -->
+    <div id="cancelModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Cancel Booking</h3>
+                <span class="close" onclick="closeCancelModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to cancel this booking? This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="cancel-btn" onclick="closeCancelModal()">Keep Booking</button>
+                <button class="confirm-cancel-btn" onclick="confirmCancel()">Yes, Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'UserPage/js/booked.js' %}"></script>
+</body>
+</html>

@@ -1,0 +1,199 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Detail | RUPP Room Booking</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{% static 'UserPage/css/booking-detail.css' %}">
+    <script src="{% static 'UserPage/js/booking-detail.js' %}" defer></script>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <!-- Top Navigation Bar -->
+    <div class="header">
+        <div class="logo">
+            <img src="https://upload.wikimedia.org/wikipedia/km/e/ee/Rupp_logo.png?20090803154844" alt="RUPP Logo">
+            <div>Royal University of Phnom Penh</div>
+        </div>
+
+        <div class="nav">
+            <a href="{% url 'accounts:user_dashboard' %}" class="nav-item">Home</a>
+            <a href="{% url 'accounts:booking' %}" class="nav-item">Booking</a>
+            <a href="{% url 'accounts:booked' %}" class="nav-item active">Booked</a>
+            <a href="{% url 'accounts:setting' %}" class="nav-item">Setting</a>
+            <a href="{% url 'accounts:about_us' %}" class="nav-item">About us</a>
+            <a href="{% url 'accounts:service' %}" class="nav-item">Service</a>
+        </div>
+    </div>
+
+    <!-- Booking Detail Section -->
+    <main class="max-w-4xl mx-auto mt-10 px-4">
+        <div class="detail-header">
+            <h2 class="text-3xl font-bold mb-2">Booking Detail</h2>
+            <p class="text-gray-600 mb-6">View and manage your booking information</p>
+        </div>
+
+        {% if booking %}
+            <div class="booking-detail-card">
+                <!-- Booking Status Badge -->
+                <div class="status-badge status-{{ booking.status }}">
+                    {% if booking.status == 'confirmed' %}
+                        <i class="fas fa-check-circle"></i> Confirmed
+                    {% elif booking.status == 'pending' %}
+                        <i class="fas fa-clock"></i> Pending
+                    {% elif booking.status == 'cancelled' %}
+                        <i class="fas fa-times-circle"></i> Cancelled
+                    {% else %}
+                        <i class="fas fa-info-circle"></i> {{ booking.status|title }}
+                    {% endif %}
+                </div>
+
+                <!-- Booking Information -->
+                <div class="booking-info-grid">
+                    <div class="info-section">
+                        <h3><i class="fas fa-calendar-alt"></i> Booking Information</h3>
+                        <div class="info-item">
+                            <span class="label">Title:</span>
+                            <span class="value">{{ booking.title|default:"Room Booking" }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Description:</span>
+                            <span class="value">{{ booking.description|default:"No description provided" }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Purpose:</span>
+                            <span class="value">{{ booking.purpose|default:"General Use" }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Participants:</span>
+                            <span class="value">{{ booking.participants_count|default:"1" }} people</span>
+                        </div>
+                    </div>
+
+                    <div class="info-section">
+                        <h3><i class="fas fa-map-marker-alt"></i> Location Details</h3>
+                        <div class="info-item">
+                            <span class="label">Building:</span>
+                            <span class="value">{{ booking.room.building.name|default:"Building STEM" }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Room:</span>
+                            <span class="value">{{ booking.room.name|default:"Room 206" }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Floor:</span>
+                            <span class="value">{{ booking.room.floor|default:"2nd Floor" }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Capacity:</span>
+                            <span class="value">{{ booking.room.capacity|default:"30" }} people</span>
+                        </div>
+                    </div>
+
+                    <div class="info-section">
+                        <h3><i class="fas fa-clock"></i> Time & Date</h3>
+                        <div class="info-item">
+                            <span class="label">Date:</span>
+                            <span class="value">{{ booking.start_date|date:"F d, Y"|default:"01/May/2025" }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Start Time:</span>
+                            <span class="value">{{ booking.start_time|time:"g:i A"|default:"8:00 AM" }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">End Time:</span>
+                            <span class="value">{{ booking.end_time|time:"g:i A"|default:"11:00 AM" }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Duration:</span>
+                            <span class="value">{{ booking.duration|default:"3 hours" }}</span>
+                        </div>
+                    </div>
+
+                    <div class="info-section">
+                        <h3><i class="fas fa-user"></i> Booking Details</h3>
+                        <div class="info-item">
+                            <span class="label">Booked By:</span>
+                            <span class="value">{{ booking.user.first_name }} {{ booking.user.last_name }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Email:</span>
+                            <span class="value">{{ booking.user.email }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Booking ID:</span>
+                            <span class="value">#{{ booking.id|default:"12345" }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Created:</span>
+                            <span class="value">{{ booking.created_at|date:"F d, Y g:i A"|default:"March 15, 2025 2:30 PM" }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Room Facilities -->
+                {% if booking.room.facilities %}
+                    <div class="facilities-section">
+                        <h3><i class="fas fa-cogs"></i> Room Facilities</h3>
+                        <div class="facilities-grid">
+                            {% for facility in booking.room.facilities %}
+                                <div class="facility-item">
+                                    <i class="fas fa-check"></i>
+                                    <span>{{ facility }}</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <a href="{% url 'accounts:booked' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Bookings
+                    </a>
+                    
+                    {% if booking.status == 'confirmed' or booking.status == 'pending' %}
+                        <button class="btn btn-primary" onclick="editBooking({{ booking.id }})">
+                            <i class="fas fa-edit"></i> Edit Booking
+                        </button>
+                        <button class="btn btn-danger" onclick="cancelBooking({{ booking.id }})">
+                            <i class="fas fa-times"></i> Cancel Booking
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+        {% else %}
+            <div class="no-booking">
+                <div class="no-booking-icon">❌</div>
+                <h3>Booking Not Found</h3>
+                <p>The booking you're looking for doesn't exist or has been removed.</p>
+                <a href="{% url 'accounts:booked' %}" class="btn btn-primary">
+                    <i class="fas fa-arrow-left"></i> Back to Bookings
+                </a>
+            </div>
+        {% endif %}
+    </main>
+
+    <!-- Cancel Booking Modal -->
+    <div id="cancelModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Cancel Booking</h3>
+                <span class="close" onclick="closeCancelModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to cancel this booking? This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeCancelModal()">Keep Booking</button>
+                <button class="btn btn-danger" onclick="confirmCancel()">Yes, Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+    <script src="{% static 'UserPage/js/booking-detail.js' %}"></script>
+</body>
+</html>

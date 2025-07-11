@@ -1,0 +1,81 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us | RUPP Room Booking System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'UserPage/css/about-us.css' %}">
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <img src="https://upload.wikimedia.org/wikipedia/km/e/ee/Rupp_logo.png?20090803154844" alt="RUPP Logo">
+            <div>Royal University of Phnom Penh</div>
+        </div>
+
+        <div class="nav">
+            <a href="{% url 'accounts:user_dashboard' %}" class="nav-item">Home</a>
+            <a href="{% url 'accounts:booking' %}" class="nav-item">Booking</a>
+            <a href="{% url 'accounts:booked' %}" class="nav-item">Booked</a>
+            <a href="{% url 'accounts:setting' %}" class="nav-item">Setting</a>
+            <a href="{% url 'accounts:about_us' %}" class="nav-item active">About us</a>
+            <a href="{% url 'accounts:service' %}" class="nav-item">Service</a>
+        </div>
+    </div>
+
+    <!-- About Us Page -->
+    <main id="about">
+        <h2>Support Center</h2>
+        <section class="profiles">
+            <div class="profile">
+                <img class="profile-img" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSt08ADSBsRRxQ2xzvxjADA0SCVuwEwY6gASg&s" alt="Admin Profile">
+                <p>Thun Samaol</p>
+            </div>
+            <div class="profile">
+                <img class="profile-img" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSt08ADSBsRRxQ2xzvxjADA0SCVuwEwY6gASg&s" alt="Admin Profile">
+                <p>Ly Panharith</p>
+            </div>
+            <div class="profile">
+                <img class="profile-img" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSt08ADSBsRRxQ2xzvxjADA0SCVuwEwY6gASg&s" alt="Admin Profile">
+                <p>Trouern Tra</p>
+            </div>
+            <div class="profile">
+                <img class="profile-img" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSt08ADSBsRRxQ2xzvxjADA0SCVuwEwY6gASg&s" alt="Admin Profile">
+                <p>Chhoun Oudom</p>
+            </div>
+        </section>
+
+        <section class="about-box">
+            <div class="about-left">
+                <h3>Mission</h3>
+                <ul>
+                    <li>Our Room Booking System is designed to streamline room reservations for students and staff at RUPP.</li>
+                </ul>
+                <h3>Who We Are</h3>
+                <ul>
+                    <li>Students from Department of Data Science and Engineering, RUPP (university developers).</li>
+                </ul>
+            </div>
+            <div class="about-right">
+                <h3>What We Do</h3>
+                <ul>
+                    <li>Saving time, easy scheduling, accessible anytime</li>
+                </ul>
+                <h3>Goals</h3>
+                <ul>
+                    <li>Making room booking simple, transparent, and reliable.</li>
+                </ul>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>All Rights Reserved, Copyright © 2025 Royal University of Phnom Penh (RUPP)</p>
+        <p>Russian Federation Boulevard, Toul Kork, Phnom Penh, Cambodia. Tel: 855-972 274 936</p>
+        <p>Designed by: DSE TEAM</p>
+    </footer>
+
+</body>
+</html>

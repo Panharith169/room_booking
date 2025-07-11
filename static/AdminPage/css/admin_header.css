@@ -1,0 +1,174 @@
+/* Shared Admin Header Styles */
+/* This file contains consistent header styling for all admin pages */
+
+:root {
+    --primary-color: #667eea;
+    --secondary-color: #764ba2;
+    --accent-color: #ffcc00;
+    --text-color: #2c3e50;
+    --text-muted: #6c757d;
+    --bg-color: #f8f9fa;
+    --border-color: #dee2e6;
+    --success-color: #28a745;
+    --warning-color: #ffc107;
+    --danger-color: #dc3545;
+    --info-color: #17a2b8;
+    --white: #ffffff;
+    --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    --shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+
+/* Professional Header Styles */
+.header {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    color: white;
+    padding: 1rem 0;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.header .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header .logo {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.header .logo img {
+    height: 50px;
+    border-radius: 8px;
+}
+
+.header .logo div {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: white;
+}
+
+/* Clean Navigation Styles */
+.header .nav {
+    display: flex;
+    gap: 30px;
+    align-items: center;
+}
+
+.header .nav-item {
+    color: white;
+    text-decoration: none;
+    padding: 10px 20px;
+    border-radius: 25px;
+    transition: all 0.3s ease;
+    font-weight: 500;   
+    font-size: 1rem;
+    position: relative;
+}
+
+.header .nav-item:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.header .nav-item.active {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* User Info Styles */
+.header .user-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.header .user-info span {
+    color: white;
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+
+.header .btn-outline-danger {
+    border: 2px solid rgba(220, 53, 69, 0.8);
+    color: rgba(220, 53, 69, 0.9);
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 8px 16px;
+    border-radius: 20px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.header .btn-outline-danger:hover {
+    background-color: #dc3545;
+    color: white;
+    border-color: #dc3545;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+}
+
+/* Responsive Header Styles */
+@media (max-width: 992px) {
+    .header .container {
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+    
+    .header .nav {
+        gap: 20px;
+    }
+    
+    .header .nav-item {
+        padding: 8px 16px;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .header .container {
+        flex-direction: column;
+        gap: 15px;
+        padding: 0 15px;
+    }
+    
+    .header .nav {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 15px;
+    }
+    
+    .header .logo div {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .header .nav-item {
+        padding: 6px 12px;
+        font-size: 0.85rem;
+    }
+    
+    .header .user-info span {
+        display: none;
+    }
+    
+    .header .logo div {
+        font-size: 0.9rem;
+        max-width: 150px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}

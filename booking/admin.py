@@ -77,14 +77,14 @@ class RoomAdmin(admin.ModelAdmin):
         'room_type', 
         'capacity', 
         'availability_status',
-        'is_active',
+        'is_available',
         'is_bookable_status'
     )
     
     list_filter = (
         'room_type', 
         'availability_status', 
-        'is_active',
+        'is_available',
         'created_at'
     )
     
@@ -100,7 +100,7 @@ class RoomAdmin(admin.ModelAdmin):
             'fields': ('description', 'equipment')
         }),
         ('Status', {
-            'fields': ('availability_status', 'is_active')
+            'fields': ('availability_status', 'is_available')
         }),
         ('Timestamps', {
             'fields': ('created_at', 'updated_at'),
@@ -177,7 +177,7 @@ class BookingAdmin(admin.ModelAdmin):
     
     def is_active_status(self, obj):
         """Display if booking is currently active"""
-        if obj.is_active():
+        if obj.is_available():
             return format_html(
                 '<span style="color: green; font-weight: bold;">● Active</span>'
             )
@@ -196,10 +196,12 @@ class BookingRuleAdmin(admin.ModelAdmin):
     
     list_display = (
         'name', 
-        'max_duration_hours', 
-        'max_daily_bookings',
-        'max_weekly_bookings',
-        'advance_booking_days',
+        'max_duration_hours',
+        "daily_booking_limit",
+        "weekly_booking_limit",
+        # 'max_daily_bookings',
+        # 'max_weekly_bookings',
+        'max_advance_days',
         'is_active'
     )
     
@@ -216,13 +218,13 @@ class BookingRuleAdmin(admin.ModelAdmin):
         ('Booking Limits', {
             'fields': (
                 'max_duration_hours',
-                'max_daily_bookings', 
-                'max_weekly_bookings'
+                'daily_booking_limit', 
+                'weekly_booking_limit',
             )
         }),
         ('Time Constraints', {
             'fields': (
-                'advance_booking_days',
+                'max_advancee_days',
                 'min_advance_hours',
                 'booking_start_time',
                 'booking_end_time'

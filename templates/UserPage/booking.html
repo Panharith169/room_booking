@@ -1,0 +1,552 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking | RUPP Room Booking</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'UserPage/css/booking.css' %}">
+    <script src="{% static 'UserPage/js/booking.js' %}" defer></script>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <img src="https://upload.wikimedia.org/wikipedia/km/e/ee/Rupp_logo.png?20090803154844" alt="RUPP Logo">
+            <div>Royal University of Phnom Penh</div>
+        </div>
+        <div class="nav">
+            <a href="{% url 'accounts:user_dashboard' %}" class="nav-item">Home</a>
+            <a href="{% url 'accounts:booking' %}" class="nav-item active">Booking</a>
+            <a href="{% url 'accounts:booked' %}" class="nav-item">Booked</a>
+            <a href="{% url 'accounts:setting' %}" class="nav-item">Setting</a>
+            <a href="{% url 'accounts:about_us' %}" class="nav-item">About us</a>
+            <a href="{% url 'accounts:service' %}" class="nav-item">Service</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Django Messages -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post" action="{% url 'accounts:create_booking' %}" id="bookingForm">
+            {% csrf_token %}
+            <div class="card">
+                <div class="section">
+                    <div class="section-title">Building</div>
+                    <div class="dropdown-container">
+                        <select id="buildingSelect" name="building" class="form-control">
+                            <option value="" disabled selected>Select Building</option>
+                            {% for building in buildings %}
+                                <option value="{{ building.id }}">{{ building.name }}</option>
+                            {% empty %}
+                                <option value="1">Building A</option>
+                                <option value="2">Building STEM</option>
+                                <option value="3">Library Building</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <div class="section-title">Room</div>
+                    <div class="dropdown-container">
+                        <select id="roomSelect" name="room" class="form-control" required>
+                            <option value="" disabled selected>Select Room</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <div class="section-title">View Room</div>
+                    <div class="view-container">
+                        <div class="room-info" id="roomInfo">
+                            <i class="fas fa-map-location-dot"></i>
+                            <span>Select a room</span>
+                        </div>
+                        <div class="status-container" id="roomStatus">
+                            <span class="status">Status Unknown</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="form-group">
+                    <div class="section-title">Date</div>
+                    <input type="date" id="dateInput" name="date" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <div class="section-title">Time</div>
+                    <div class="time-container">
+                        <div class="time-group">
+                            <label>Start Time:</label>
+                            <input type="time" id="startTime" name="start_time" class="form-control" required>
+                        </div>
+                        <div class="time-group">
+                            <label>End Time:</label>
+                            <input type="time" id="endTime" name="end_time" class="form-control" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <div class="section-title">Purpose</div>
+                    <select name="purpose" class="form-control" required>
+                        <option value="" selected disabled>Select booking purpose</option>
+                        <option value="lecture">Lecture</option>
+                        <option value="meeting">Meeting</option>
+                        <option value="workshop">Workshop</option>
+                        <option value="conference">Conference</option>
+                        <option value="seminar">Seminar</option>
+                        <option value="training">Training</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <div class="section-title">Number of Attendees</div>
+                    <input type="number" name="attendees" class="form-control" placeholder="Enter expected number of attendees" min="1" max="200" required>
+                </div>
+                
+                <div class="form-group">
+                    <div class="section-title">Additional Notes (Optional)</div>
+                    <textarea name="notes" class="form-control" rows="3" placeholder="Any special requirements or notes..."></textarea>
+                </div>
+                
+                <button type="submit" class="booking-btn" id="bookingBtn">
+                    <i class="fas fa-calendar-check"></i> Book Now
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Booking Confirmation Modal -->
+    <div id="bookingModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-icon">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+            <div class="modal-header">
+                <h3>Confirm Booking</h3>
+                <p>Please review the details of your booking</p>
+            </div>
+            <div class="modal-details">
+                <div class="detail-item">
+                    <span class="detail-label">Building:</span>
+                    <span class="detail-value" id="modalBuilding">-</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Room:</span>
+                    <span class="detail-value" id="modalRoom">-</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Date:</span>
+                    <span class="detail-value" id="modalDate">-</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Time:</span>
+                    <span class="detail-value" id="modalTime">-</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Purpose:</span>
+                    <span class="detail-value" id="modalPurpose">-</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Attendees:</span>
+                    <span class="detail-value" id="modalAttendees">-</span>
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button type="button" class="modal-btn confirm-btn" id="confirmBooking">Confirm</button>
+                <button type="button" class="modal-btn cancel-btn" id="cancelModal">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-icon" style="background-color: #e8f5e8;">
+                <i class="fas fa-check-circle" style="color: #2ecc71;"></i>
+            </div>
+            <div class="modal-header">
+                <h3>Booking Successful!</h3>
+                <p>Your room has been booked successfully.</p>
+            </div>
+            <div class="modal-buttons">
+                <button type="button" class="modal-btn confirm-btn" onclick="window.location.href='{% url 'accounts:booked' %}'">View Bookings</button>
+                <button type="button" class="modal-btn cancel-btn" onclick="closeSuccessModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // CSRF token for AJAX requests
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const buildingSelect = document.getElementById('buildingSelect');
+            const roomSelect = document.getElementById('roomSelect');
+            const roomInfo = document.getElementById('roomInfo');
+            const roomStatus = document.getElementById('roomStatus');
+            
+            // Auto-fill form from URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            // Auto-fill building if provided
+            if (urlParams.has('building')) {
+                const buildingName = decodeURIComponent(urlParams.get('building'));
+                console.log('Looking for building:', buildingName);
+                
+                // Find building option by name (more flexible matching)
+                for (let option of buildingSelect.options) {
+                    const optionText = option.textContent.trim();
+                    console.log('Checking building option:', optionText);
+                    if (optionText === buildingName || optionText.includes(buildingName) || buildingName.includes(optionText)) {
+                        console.log('Found matching building:', optionText);
+                        buildingSelect.value = option.value;
+                        buildingSelect.dispatchEvent(new Event('change'));
+                        break;
+                    }
+                }
+            }
+            
+            // Auto-fill room if provided (after building is loaded)
+            if (urlParams.has('room') || urlParams.has('room_id')) {
+                const roomName = urlParams.has('room') ? decodeURIComponent(urlParams.get('room')) : null;
+                const roomId = urlParams.get('room_id');
+                
+                console.log('Looking for room:', roomName, 'or room ID:', roomId);
+                
+                setTimeout(() => {
+                    let roomFound = false;
+                    
+                    // Try to find by room ID first (most reliable)
+                    if (roomId) {
+                        for (let option of roomSelect.options) {
+                            if (option.value === roomId) {
+                                console.log('Found room by ID:', option.textContent);
+                                roomSelect.value = option.value;
+                                roomSelect.dispatchEvent(new Event('change'));
+                                roomFound = true;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    // If not found by ID, try by room name/number
+                    if (!roomFound && roomName) {
+                        for (let option of roomSelect.options) {
+                            const optionText = option.textContent.trim();
+                            console.log('Checking room option:', optionText);
+                            
+                            // Try multiple matching strategies
+                            if (optionText === roomName || 
+                                optionText.includes(roomName) || 
+                                roomName.includes(optionText) ||
+                                optionText.toLowerCase().includes(roomName.toLowerCase()) ||
+                                roomName.toLowerCase().includes(optionText.toLowerCase())) {
+                                console.log('Found matching room:', optionText);
+                                roomSelect.value = option.value;
+                                roomSelect.dispatchEvent(new Event('change'));
+                                roomFound = true;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    if (!roomFound) {
+                        console.warn('Room not found in dropdown:', roomName, 'ID:', roomId);
+                        console.log('Available room options:', Array.from(roomSelect.options).map(opt => ({value: opt.value, text: opt.textContent})));
+                    }
+                }, 1500); // Increased timeout to ensure rooms are loaded
+            }
+            
+            // Auto-fill date if provided
+            if (urlParams.has('date')) {
+                const date = urlParams.get('date');
+                if (date) {
+                    console.log('Setting date:', date);
+                    document.getElementById('dateInput').value = date;
+                }
+            }
+            
+            // Auto-fill time if provided
+            if (urlParams.has('time')) {
+                const time = urlParams.get('time');
+                if (time && time.trim() !== '') {
+                    console.log('Setting time:', time);
+                    document.getElementById('startTime').value = time;
+                    // Set end time to 1 hour later
+                    const startTime = new Date(`1970-01-01T${time}:00`);
+                    startTime.setHours(startTime.getHours() + 1);
+                    const endTime = startTime.toTimeString().substr(0, 5);
+                    document.getElementById('endTime').value = endTime;
+                }
+            }
+            
+            // Auto-fill attendees based on room capacity if provided
+            if (urlParams.has('room_capacity')) {
+                const capacity = urlParams.get('room_capacity');
+                const attendeesInput = document.querySelector('input[name="attendees"]');
+                if (attendeesInput && capacity) {
+                    // Set a reasonable default (e.g., 50% of capacity)
+                    const suggestedAttendees = Math.max(1, Math.floor(capacity * 0.5));
+                    attendeesInput.value = suggestedAttendees;
+                    console.log('Suggested attendees based on capacity:', suggestedAttendees);
+                }
+            }
+
+            // Load rooms when building is selected
+            buildingSelect.addEventListener('change', function() {
+                const buildingId = this.value;
+                if (buildingId) {
+                    loadRooms(buildingId);
+                } else {
+                    roomSelect.innerHTML = '<option value="" disabled selected>Select Room</option>';
+                    updateRoomInfo('Select a room', 'Status Unknown');
+                }
+            });
+
+            // Update room info when room is selected
+            roomSelect.addEventListener('change', function() {
+                const selectedOption = this.options[this.selectedIndex];
+                if (selectedOption.value) {
+                    const roomData = JSON.parse(selectedOption.dataset.roomInfo || '{}');
+                    updateRoomInfo(
+                        `${roomData.name} (${roomData.room_number})`,
+                        roomData.available ? 'Available' : 'Unavailable'
+                    );
+                }
+            });
+
+            function loadRooms(buildingId) {
+                fetch(`{% url 'accounts:get_rooms_ajax' %}?building_id=${buildingId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        roomSelect.innerHTML = '<option value="" disabled selected>Select Room</option>';
+                        
+                        if (data.rooms && data.rooms.length > 0) {
+                            data.rooms.forEach(room => {
+                                if (room.available) {
+                                    const option = document.createElement('option');
+                                    option.value = room.id;
+                                    option.textContent = `${room.name} (${room.room_number}) - Capacity: ${room.capacity}`;
+                                    option.dataset.roomInfo = JSON.stringify(room);
+                                    roomSelect.appendChild(option);
+                                }
+                            });
+                        } else {
+                            const option = document.createElement('option');
+                            option.value = '';
+                            option.textContent = 'No rooms available';
+                            option.disabled = true;
+                            roomSelect.appendChild(option);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error loading rooms:', error);
+                        roomSelect.innerHTML = '<option value="" disabled>Error loading rooms</option>';
+                    });
+            }
+
+            function updateRoomInfo(name, status) {
+                roomInfo.innerHTML = `<i class="fas fa-map-location-dot"></i><span>${name}</span>`;
+                roomStatus.innerHTML = `<span class="status ${status.toLowerCase()}">${status}</span>`;
+            }
+
+            // Set minimum date to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('dateInput').min = today;
+
+            // Form validation
+            document.getElementById('bookingForm').addEventListener('submit', function(e) {
+                const startTime = document.getElementById('startTime').value;
+                const endTime = document.getElementById('endTime').value;
+                
+                if (startTime && endTime && startTime >= endTime) {
+                    e.preventDefault();
+                    alert('End time must be after start time.');
+                    return false;
+                }
+            });
+        });
+
+        // Success modal functions
+        function showSuccessModal() {
+            document.getElementById('successModal').style.display = 'block';
+        }
+
+        function closeSuccessModal() {
+            document.getElementById('successModal').style.display = 'none';
+        }
+
+        // Show success modal if booking was successful
+        {% if messages %}
+            {% for message in messages %}
+                {% if message.tags == 'success' %}
+                    setTimeout(() => {
+                        showSuccessModal();
+                    }, 100);
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+    </script>
+
+    <!-- Autofill Script for URL Parameters -->
+    <script>
+        // Autofill data from Django context
+        const autofillData = {
+            roomId: '{{ autofill_room_id|default:"" }}',
+            date: '{{ autofill_date|default:"" }}',
+            time: '{{ autofill_time|default:"" }}',
+            selectedRoom: {% if selected_room %}{{ selected_room.id }}{% else %}null{% endif %}
+        };
+        
+        // Show autofill notification if data is present
+        if (autofillData.roomId || autofillData.date || autofillData.time) {
+            document.addEventListener('DOMContentLoaded', function() {
+                showAutofillNotification();
+                
+                // Handle autofill after page loads
+                setTimeout(() => {
+                    handleAutofill();
+                }, 500);
+            });
+        }
+        
+        function showAutofillNotification() {
+            const notification = document.createElement('div');
+            notification.className = 'autofill-notification';
+            notification.innerHTML = `
+                <div class="alert alert-info alert-dismissible" style="margin: 20px; padding: 15px; background: #d4edda; border: 1px solid #c3e6cb; border-radius: 8px; color: #155724;">
+                    <i class="fas fa-info-circle"></i> 
+                    <strong>Quick Booking:</strong> Form has been pre-filled with your selected room details.
+                    <button type="button" onclick="this.parentElement.parentElement.remove()" style="float: right; background: none; border: none; font-size: 18px; cursor: pointer;">&times;</button>
+                </div>
+            `;
+            
+            const container = document.querySelector('.container');
+            if (container) {
+                container.insertBefore(notification, container.firstChild);
+                
+                // Auto-hide after 7 seconds
+                setTimeout(() => {
+                    if (notification.parentElement) {
+                        notification.remove();
+                    }
+                }, 7000);
+            }
+        }
+        
+        function handleAutofill() {
+            // Autofill date
+            if (autofillData.date) {
+                const dateInput = document.getElementById('dateInput');
+                if (dateInput) {
+                    dateInput.value = autofillData.date;
+                    dateInput.dispatchEvent(new Event('change'));
+                }
+            }
+            
+            // Autofill start time
+            if (autofillData.time) {
+                const timeInput = document.getElementById('startTime');
+                if (timeInput) {
+                    timeInput.value = autofillData.time;
+                    timeInput.dispatchEvent(new Event('change'));
+                    
+                    // Auto-calculate end time (add 2 hours)
+                    if (autofillData.time) {
+                        const endTimeInput = document.getElementById('endTime');
+                        if (endTimeInput) {
+                            const [hours, minutes] = autofillData.time.split(':');
+                            const endHour = (parseInt(hours) + 2) % 24;
+                            const endTime = `${endHour.toString().padStart(2, '0')}:${minutes}`;
+                            endTimeInput.value = endTime;
+                        }
+                    }
+                }
+            }
+            
+            // Autofill room based on URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            // Auto-fill building first
+            if (urlParams.has('building')) {
+                const building = urlParams.get('building');
+                const buildingSelect = document.getElementById('buildingSelect');
+                console.log('Auto-filling building:', building);
+                
+                // Find building by name
+                for (let option of buildingSelect.options) {
+                    if (option.text.includes(building) || option.value === building) {
+                        buildingSelect.value = option.value;
+                        buildingSelect.dispatchEvent(new Event('change'));
+                        console.log('Building selected:', option.value, option.text);
+                        break;
+                    }
+                }
+                
+                // Wait for rooms to load, then select room
+                setTimeout(() => {
+                    if (urlParams.has('room') || urlParams.has('room_name')) {
+                        const room = urlParams.get('room') || urlParams.get('room_name');
+                        const roomNumber = urlParams.get('room_number');
+                        const roomSelect = document.getElementById('roomSelect');
+                        console.log('Auto-filling room:', room, 'room_number:', roomNumber);
+                        
+                        // Find room by multiple criteria
+                        for (let option of roomSelect.options) {
+                            const optionText = option.text.toLowerCase();
+                            const roomLower = room.toLowerCase();
+                            
+                            // Try multiple matching strategies
+                            if (option.value === urlParams.get('room_id') || // Exact ID match
+                                optionText.includes(roomLower) || // Name contains room
+                                (roomNumber && optionText.includes(roomNumber.toLowerCase())) || // Room number match
+                                optionText.startsWith(roomLower) || // Starts with room name
+                                room === option.text) { // Exact text match
+                                
+                                roomSelect.value = option.value;
+                                roomSelect.dispatchEvent(new Event('change'));
+                                console.log('Room selected:', option.value, option.text);
+                                break;
+                            }
+                        }
+                    }
+                }, 1500); // Wait for rooms to be populated
+            }
+            
+            // Alternative: try direct room ID matching if available
+            if (autofillData.roomId) {
+                console.log('Trying to auto-fill room ID:', autofillData.roomId);
+                
+                // Wait a bit for all options to load
+                setTimeout(() => {
+                    const roomSelect = document.getElementById('roomSelect');
+                    if (roomSelect) {
+                        for (let option of roomSelect.options) {
+                            if (option.value === autofillData.roomId) {
+                                roomSelect.value = autofillData.roomId;
+                                roomSelect.dispatchEvent(new Event('change'));
+                                console.log('Room selected by ID:', option.value, option.text);
+                                break;
+                            }
+                        }
+                    }
+                }, 2000);
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,274 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, minimum-scale=1.0, maximum-scale=5.0">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="RUPP Room Booking">
+    <title>Settings | RUPP Room Booking System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'AdminPage/css/setting.css' %}">
+    <link rel="stylesheet" href="{% static 'AdminPage/css/responsive.css' %}">
+</head>
+<body>
+    <!-- Header -->
+    {% include 'AdminPage/includes/admin_header.html' %}
+
+    <!-- Messages -->
+    {% if messages %}
+        <div class="container mt-3">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main>
+        <div class="container-fluid">
+            <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                <h1 class="h3 mb-0 text-gray-800">System Settings</h1>
+            </div>
+
+            <div class="settings-container">
+            <div class="settings-header">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <div class="settings-icon">
+                            <i class="fas fa-cog fa-3x text-primary"></i>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <h2 class="mb-1">System Settings</h2>
+                        <p class="text-muted mb-0">Manage your system preferences and security settings</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Navigation -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Settings Categories</h6>
+                </div>
+                <div class="card-body">
+                    <div class="settings-tabs">
+                        <button class="tab-button active" data-tab="password">
+                            <i class="fas fa-key"></i> Change Password
+                        </button>
+                        <button class="tab-button" data-tab="security">
+                            <i class="fas fa-shield-alt"></i> Security
+                        </button>
+                        <button class="tab-button" data-tab="preferences">
+                            <i class="fas fa-sliders-h"></i> Preferences
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Content -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Settings Configuration</h6>
+                </div>
+                <div class="card-body">
+                    <div class="tab-content">
+                <!-- Password Tab -->
+                <div class="tab-pane active" id="password">
+                    <div class="setting-section">
+                        <h3><i class="fas fa-key"></i> Change Password</h3>
+                        <p>Update your account password to keep your account secure.</p>
+                        
+                        {% if form %}
+                            <form method="post" class="password-form">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="change_password">
+                                
+                                <div class="form-group">
+                                    <label for="{{ form.old_password.id_for_label }}">Current Password</label>
+                                    {{ form.old_password }}
+                                    {% if form.old_password.errors %}
+                                        <div class="error-message">
+                                            {{ form.old_password.errors.0 }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="{{ form.new_password1.id_for_label }}">New Password</label>
+                                    {{ form.new_password1 }}
+                                    {% if form.new_password1.errors %}
+                                        <div class="error-message">
+                                            {{ form.new_password1.errors.0 }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="{{ form.new_password2.id_for_label }}">Confirm New Password</label>
+                                    {{ form.new_password2 }}
+                                    {% if form.new_password2.errors %}
+                                        <div class="error-message">
+                                            {{ form.new_password2.errors.0 }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save"></i> Change Password
+                                    </button>
+                                </div>
+                            </form>
+                        {% else %}
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                Password change form is not available at the moment.
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Security Tab -->
+                <div class="tab-pane" id="security">
+                    <div class="setting-section">
+                        <h3><i class="fas fa-shield-alt"></i> Security Settings</h3>
+                        <p>Manage your account security and access permissions.</p>
+                        
+                        <div class="security-options">
+                            <div class="security-item">
+                                <div class="security-info">
+                                    <h4>Two-Factor Authentication</h4>
+                                    <p>Add an extra layer of security to your account</p>
+                                </div>
+                                <div class="security-action">
+                                    <button class="btn btn-outline-primary" onclick="enableTwoFactor()">Enable</button>
+                                </div>
+                            </div>
+                            
+                            <div class="security-item">
+                                <div class="security-info">
+                                    <h4>Login Notifications</h4>
+                                    <p>Get notified when someone logs into your account</p>
+                                </div>
+                                <div class="security-action">
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" checked onchange="toggleSecurity('login_notifications', this.checked)">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="security-item">
+                                <div class="security-info">
+                                    <h4>Session Timeout</h4>
+                                    <p>Automatically log out after period of inactivity</p>
+                                </div>
+                                <div class="security-action">
+                                    <select class="form-control" onchange="updateSessionTimeout(this.value)">
+                                        <option value="30">30 minutes</option>
+                                        <option value="60" selected>1 hour</option>
+                                        <option value="120">2 hours</option>
+                                        <option value="240">4 hours</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Preferences Tab -->
+                <div class="tab-pane" id="preferences">
+                    <div class="setting-section">
+                        <h3><i class="fas fa-sliders-h"></i> System Preferences</h3>
+                        <p>Customize your system experience and notifications.</p>
+                        
+                        <div class="preferences-options">
+                            <div class="preference-item">
+                                <div class="preference-info">
+                                    <h4>Email Notifications</h4>
+                                    <p>Receive email notifications for important updates</p>
+                                </div>
+                                <div class="preference-action">
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" checked onchange="updatePreference('email_notifications', this.checked)">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="preference-item">
+                                <div class="preference-info">
+                                    <h4>System Language</h4>
+                                    <p>Choose your preferred language</p>
+                                </div>
+                                <div class="preference-action">
+                                    <select class="form-control" onchange="updatePreference('language', this.value)">
+                                        <option value="en" selected>English</option>
+                                        <option value="km">Khmer</option>
+                                        <option value="fr">French</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="preference-item">
+                                <div class="preference-info">
+                                    <h4>Date Format</h4>
+                                    <p>Select your preferred date format</p>
+                                </div>
+                                <div class="preference-action">
+                                    <select class="form-control" onchange="updatePreference('date_format', this.value)">
+                                        <option value="mm/dd/yyyy" selected>MM/DD/YYYY</option>
+                                        <option value="dd/mm/yyyy">DD/MM/YYYY</option>
+                                        <option value="yyyy-mm-dd">YYYY-MM-DD</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-primary" onclick="saveAllPreferences()">
+                                <i class="fas fa-save"></i> Save Preferences
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation Actions -->
+            <div class="card shadow mb-4">
+                <div class="card-body">
+                    <div class="settings-actions">
+                        <a href="{% url 'accounts:admin_dashboard' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{% static 'AdminPage/js/setting.js' %}"></script>
+    <script src="{% static 'AdminPage/js/adminRealtime.js' %}"></script>
+    <script src="{% static 'AdminPage/js/mobile-enhancements.js' %}"></script>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p>All Rights Reserved, Copyright © 2025 Royal University of Phnom Penh (RUPP)</p>
+            <p>Russian Federation Boulevard, Toul Kork, Phnom Penh, Cambodia. Tel: 855-972 274 936</p>
+            <p>Designed by: DSE TEAM</p>
+        </div>
+    </footer>
+</body>
+</html>

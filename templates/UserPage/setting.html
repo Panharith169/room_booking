@@ -1,0 +1,350 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings | RUPP Room Booking</title>
+    <link rel="stylesheet" href="{% static 'UserPage/css/setting.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="{% static 'UserPage/js/setting.js' %}" defer></script>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="logo">
+            <img src="https://upload.wikimedia.org/wikipedia/km/e/ee/Rupp_logo.png?20090803154844" alt="RUPP Logo">
+            <div>Royal University of Phnom Penh</div>
+        </div>
+        <div class="nav">
+            <a href="{% url 'accounts:user_dashboard' %}" class="nav-item">Home</a>
+            <a href="{% url 'accounts:booking' %}" class="nav-item">Booking</a>
+            <a href="{% url 'accounts:booked' %}" class="nav-item">Booked</a>
+            <a href="{% url 'accounts:setting' %}" class="nav-item active">Setting</a>
+            <a href="{% url 'accounts:about_us' %}" class="nav-item">About us</a>
+            <a href="{% url 'accounts:service' %}" class="nav-item">Service</a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1><i class="fas fa-cog"></i> Account Settings</h1>
+            <p>Manage your profile and account preferences</p>
+        </div>
+
+        <!-- Display Messages -->
+        {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                    <div class="message {{ message.tags }}">
+                        <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% else %}info-circle{% endif %}"></i>
+                        {{ message }}
+                        <button type="button" class="close-message" onclick="this.parentElement.remove()">&times;</button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- Profile Overview Card -->
+        <div class="profile-card">
+            <!-- Profile Image and Basic Info -->
+            <div class="profile-left">
+                <div class="profile-image-container">
+                    <img src="{% if user.profile.profile_picture %}{{ user.profile.profile_picture.url }}{% else %}https://cdn-icons-png.flaticon.com/512/147/147144.png{% endif %}" 
+                         alt="Profile" class="profile-image">
+                    <div class="profile-status">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Active</span>
+                    </div>
+                </div>
+                <div class="profile-basic-info">
+                    <h2 class="profile-title">{{ user.first_name }} {{ user.last_name }}</h2>
+                    <p class="profile-subtitle">{{ user.profile.position|default:"Student" }}</p>
+                    <div class="profile-stats">
+                        <div class="stat-item">
+                            <i class="fas fa-calendar-check"></i>
+                            <span>{{ user.bookings.count }} Bookings</span>
+                        </div>
+                        <div class="stat-item">
+                            <i class="fas fa-clock"></i>
+                            <span>Member since {{ user.date_joined|date:"M Y" }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Information -->
+            <div class="profile-info">
+                <div class="info-section">
+                    <h3><i class="fas fa-user"></i> Personal Information</h3>
+                    <div class="info-row">
+                        <span class="label">Full Name:</span>
+                        <span class="value">{{ user.first_name }} {{ user.last_name }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Email:</span>
+                        <span class="value">{{ user.email }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Username:</span>
+                        <span class="value">{{ user.username }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Phone:</span>
+                        <span class="value">{{ user.profile.phone|default:"Not provided" }}</span>
+                    </div>
+                </div>
+
+                <div class="info-section">
+                    <h3><i class="fas fa-briefcase"></i> Professional Information</h3>
+                    <div class="info-row">
+                        <span class="label">Position:</span>
+                        <span class="value">{{ user.profile.position|default:"Student" }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Department:</span>
+                        <span class="value">{{ user.profile.department|default:"Data Science and Engineering" }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Student/ID:</span>
+                        <span class="value">{{ user.profile.student_id|default:"Not provided" }}</span>
+                    </div>
+                </div>
+
+                <div class="info-section">
+                    <h3><i class="fas fa-shield-alt"></i> Account Security</h3>
+                    <div class="info-row">
+                        <span class="label">Password:</span>
+                        <span class="value">••••••••••••</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Last Login:</span>
+                        <span class="value">{{ user.last_login|date:"M d, Y H:i" }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">Account Created:</span>
+                        <span class="value">{{ user.date_joined|date:"M d, Y" }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <h2><i class="fas fa-bolt"></i> Quick Actions</h2>
+            <div class="action-cards">
+                <div class="action-card">
+                    <div class="action-icon">
+                        <i class="fas fa-user-edit"></i>
+                    </div>
+                    <h3>Edit Profile</h3>
+                    <p>Update your personal information and preferences</p>
+                    <button onclick="window.location.href='{% url 'accounts:profile_setting' %}'" class="action-btn primary">
+                        <i class="fas fa-edit"></i> Edit Profile
+                    </button>
+                </div>
+
+                <div class="action-card">
+                    <div class="action-icon">
+                        <i class="fas fa-key"></i>
+                    </div>
+                    <h3>Change Password</h3>
+                    <p>Update your password for better security</p>
+                    <button onclick="showPasswordModal()" class="action-btn secondary">
+                        <i class="fas fa-key"></i> Change Password
+                    </button>
+                </div>
+
+                <div class="action-card">
+                    <div class="action-icon">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <h3>My Bookings</h3>
+                    <p>View and manage your room bookings</p>
+                    <button onclick="window.location.href='{% url 'accounts:booked' %}'" class="action-btn info">
+                        <i class="fas fa-calendar-alt"></i> View Bookings
+                    </button>
+                </div>
+
+                <div class="action-card">
+                    <div class="action-icon">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <h3>Notifications</h3>
+                    <p>Manage your notification preferences</p>
+                    <button onclick="showNotificationModal()" class="action-btn warning">
+                        <i class="fas fa-bell"></i> Notifications
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Account Statistics -->
+        <div class="account-stats">
+            <h2><i class="fas fa-chart-bar"></i> Account Statistics</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>{{ user.bookings.count }}</h3>
+                        <p>Total Bookings</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>{{ user.bookings.filter.count }}</h3>
+                        <p>Pending Bookings</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>{{ user.bookings.filter.count }}</h3>
+                        <p>Completed Bookings</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h3>4.8</h3>
+                        <p>Average Rating</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Password Change Modal -->
+    <div id="passwordModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-key"></i> Change Password</h3>
+                <span class="close" onclick="hidePasswordModal()">&times;</span>
+            </div>
+            <form class="modal-form" method="post" action="{% url 'accounts:change_password' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="current_password">Current Password</label>
+                    <input type="password" id="current_password" name="old_password" required>
+                </div>
+                <div class="form-group">
+                    <label for="new_password">New Password</label>
+                    <input type="password" id="new_password" name="new_password1" required>
+                </div>
+                <div class="form-group">
+                    <label for="confirm_password">Confirm New Password</label>
+                    <input type="password" id="confirm_password" name="new_password2" required>
+                </div>
+                <div class="password-requirements">
+                    <p><i class="fas fa-info-circle"></i> Password must contain:</p>
+                    <ul>
+                        <li>At least 8 characters</li>
+                        <li>At least one uppercase letter</li>
+                        <li>At least one number</li>
+                        <li>At least one special character</li>
+                    </ul>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" onclick="hidePasswordModal()" class="btn-cancel">Cancel</button>
+                    <button type="submit" class="btn-confirm">Change Password</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Notification Modal -->
+    <div id="notificationModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-bell"></i> Notification Settings</h3>
+                <span class="close" onclick="hideNotificationModal()">&times;</span>
+            </div>
+            <form class="modal-form" method="post" action="{% url 'accounts:update_notifications' %}">
+                {% csrf_token %}
+                <div class="notification-options">
+                    <div class="notification-item">
+                        <input type="checkbox" id="email_notifications" name="email_notifications" 
+                               {% if user.profile.email_notifications %}checked{% endif %}>
+                        <label for="email_notifications">
+                            <i class="fas fa-envelope"></i>
+                            Email Notifications
+                        </label>
+                    </div>
+                    <div class="notification-item">
+                        <input type="checkbox" id="booking_reminders" name="booking_reminders" 
+                               {% if user.profile.booking_reminders %}checked{% endif %}>
+                        <label for="booking_reminders">
+                            <i class="fas fa-calendar-alt"></i>
+                            Booking Reminders
+                        </label>
+                    </div>
+                    <div class="notification-item">
+                        <input type="checkbox" id="sms_notifications" name="sms_notifications" 
+                               {% if user.profile.sms_notifications %}checked{% endif %}>
+                        <label for="sms_notifications">
+                            <i class="fas fa-sms"></i>
+                            SMS Notifications
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" onclick="hideNotificationModal()" class="btn-cancel">Cancel</button>
+                    <button type="submit" class="btn-confirm">Save Settings</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="{% static 'UserPage/js/setting.js' %}"></script>
+    <script>
+        function showPasswordModal() {
+            document.getElementById('passwordModal').style.display = 'block';
+        }
+
+        function hidePasswordModal() {
+            document.getElementById('passwordModal').style.display = 'none';
+        }
+
+        function showNotificationModal() {
+            document.getElementById('notificationModal').style.display = 'block';
+        }
+
+        function hideNotificationModal() {
+            document.getElementById('notificationModal').style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const passwordModal = document.getElementById('passwordModal');
+            const notificationModal = document.getElementById('notificationModal');
+            
+            if (event.target === passwordModal) {
+                hidePasswordModal();
+            }
+            if (event.target === notificationModal) {
+                hideNotificationModal();
+            }
+        }
+
+        // Auto-hide messages after 5 seconds
+        setTimeout(function() {
+            const messages = document.querySelectorAll('.message');
+            messages.forEach(message => {
+                message.style.opacity = '0';
+                setTimeout(() => message.remove(), 300);
+            });
+        }, 5000);
+    </script>
+</body>
+</html>

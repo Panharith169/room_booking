@@ -1,7 +1,7 @@
-CREATE DATABASE room_booking;
-USE room_booking;mysql -u root -h localhost -P 3307
+CREATE DATABASE IF NOT EXISTS room_booking;
+USE room_booking;
 
-CREATE TABLE accounts_user (
+CREATE TABLE IF NOT EXISTS accounts_user (
     id INT AUTO_INCREMENT PRIMARY KEY,
     email VARCHAR(254) NOT NULL UNIQUE,
     student_id VARCHAR(20) NOT NULL UNIQUE,

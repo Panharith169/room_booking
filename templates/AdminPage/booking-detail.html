@@ -1,0 +1,329 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Details | RUPP Admin Panel</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'AdminPage/css/adminHomePage.css' %}">
+    <link rel="stylesheet" href="{% static 'AdminPage/css/manageRooms.css' %}">
+    <style>
+        .main-content {
+            margin-top: 20px;
+        }
+        
+        .booking-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border: none;
+            margin-bottom: 2rem;
+        }
+        
+        .booking-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 15px 15px 0 0;
+        }
+        
+        .booking-status {
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-confirmed { background: #d4edda; color: #155724; }
+        .status-cancelled { background: #f8d7da; color: #721c24; }
+        .status-completed { background: #cce5ff; color: #004085; }
+        .status-no_show { background: #f1f3f4; color: #5f6368; }
+        
+        .detail-section {
+            padding: 2rem;
+        }
+        
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            color: #495057;
+            display: flex;
+            align-items: center;
+        }
+        
+        .detail-label i {
+            margin-right: 0.5rem;
+            color: #667eea;
+        }
+        
+        .detail-value {
+            color: #212529;
+            font-weight: 500;
+        }
+        
+        .action-buttons {
+            padding: 1.5rem 2rem;
+            background: #f8f9fa;
+            border-radius: 0 0 15px 15px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            font-weight: 600;
+            padding: 10px 25px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-success {
+            background: #28a745;
+            border: none;
+            font-weight: 600;
+            padding: 10px 25px;
+            border-radius: 8px;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            border: none;
+            font-weight: 600;
+            padding: 10px 25px;
+            border-radius: 8px;
+        }
+        
+        .btn-warning {
+            background: #ffc107;
+            border: none;
+            font-weight: 600;
+            padding: 10px 25px;
+            border-radius: 8px;
+            color: #212529;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    {% include 'AdminPage/includes/admin_header.html' %}
+
+    <!-- Messages -->
+    {% if messages %}
+        <div class="container mt-3">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="container">
+            <div class="page-header">
+                <h2><i class="fas fa-calendar-alt me-2"></i>Booking Details</h2>
+                <p class="text-muted">View and manage booking information</p>
+            </div>
+
+            <!-- Booking Details Card -->
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="booking-card">
+                        <div class="booking-header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h3 class="mb-2">Booking #{{ booking.id }}</h3>
+                                    <p class="mb-0">{{ booking.room.name }} - {{ booking.room.room_number }}</p>
+                                </div>
+                                <div>
+                                    <span class="booking-status status-{{ booking.status }}">
+                                        {{ booking.status|title }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="detail-section">
+                            <div class="detail-row">
+                                <div class="detail-label">
+                                    <i class="fas fa-user"></i>
+                                    User
+                                </div>
+                                <div class="detail-value">
+                                    {{ booking.user.get_full_name|default:booking.user.email }}
+                                    <br>
+                                    <small class="text-muted">{{ booking.user.email }}</small>
+                                </div>
+                            </div>
+
+                            <div class="detail-row">
+                                <div class="detail-label">
+                                    <i class="fas fa-door-open"></i>
+                                    Room
+                                </div>
+                                <div class="detail-value">
+                                    {{ booking.room.name }}
+                                    <br>
+                                    <small class="text-muted">{{ booking.room.room_number }} - Capacity: {{ booking.room.capacity }}</small>
+                                </div>
+                            </div>
+
+                            <div class="detail-row">
+                                <div class="detail-label">
+                                    <i class="fas fa-calendar"></i>
+                                    Date
+                                </div>
+                                <div class="detail-value">
+                                    {{ booking.date|date:"F j, Y" }}
+                                    <br>
+                                    <small class="text-muted">{{ booking.date|date:"l" }}</small>
+                                </div>
+                            </div>
+
+                            <div class="detail-row">
+                                <div class="detail-label">
+                                    <i class="fas fa-clock"></i>
+                                    Time
+                                </div>
+                                <div class="detail-value">
+                                    {{ booking.start_time|time:"g:i A" }} - {{ booking.end_time|time:"g:i A" }}
+                                    <br>
+                                    <small class="text-muted">Duration: {{ booking.duration }} hours</small>
+                                </div>
+                            </div>
+
+                            {% if booking.purpose %}
+                            <div class="detail-row">
+                                <div class="detail-label">
+                                    <i class="fas fa-tag"></i>
+                                    Purpose
+                                </div>
+                                <div class="detail-value">
+                                    {{ booking.purpose|title }}
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            {% if booking.attendees %}
+                            <div class="detail-row">
+                                <div class="detail-label">
+                                    <i class="fas fa-users"></i>
+                                    Attendees
+                                </div>
+                                <div class="detail-value">
+                                    {{ booking.attendees }} people
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            {% if booking.notes %}
+                            <div class="detail-row">
+                                <div class="detail-label">
+                                    <i class="fas fa-sticky-note"></i>
+                                    Notes
+                                </div>
+                                <div class="detail-value">
+                                    {{ booking.notes }}
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <div class="detail-row">
+                                <div class="detail-label">
+                                    <i class="fas fa-calendar-plus"></i>
+                                    Created
+                                </div>
+                                <div class="detail-value">
+                                    {{ booking.created_at|date:"F j, Y g:i A" }}
+                                </div>
+                            </div>
+
+                            {% if booking.updated_at != booking.created_at %}
+                            <div class="detail-row">
+                                <div class="detail-label">
+                                    <i class="fas fa-edit"></i>
+                                    Last Updated
+                                </div>
+                                <div class="detail-value">
+                                    {{ booking.updated_at|date:"F j, Y g:i A" }}
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="action-buttons">
+                            <div class="d-flex justify-content-between">
+                                <a href="{% url 'accounts:all_bookings' %}" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left me-2"></i>Back to Bookings
+                                </a>
+                                <div>
+                                    {% if booking.status == 'pending' %}
+                                        <form method="post" action="{% url 'accounts:all_bookings' %}" class="d-inline">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="action" value="approve">
+                                            <input type="hidden" name="booking_id" value="{{ booking.id }}">
+                                            <button type="submit" class="btn btn-success me-2" onclick="return confirm('Are you sure you want to approve this booking?')">
+                                                <i class="fas fa-check me-2"></i>Approve
+                                            </button>
+                                        </form>
+                                        <form method="post" action="{% url 'accounts:all_bookings' %}" class="d-inline">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="action" value="reject">
+                                            <input type="hidden" name="booking_id" value="{{ booking.id }}">
+                                            <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to reject this booking?')">
+                                                <i class="fas fa-times me-2"></i>Reject
+                                            </button>
+                                        </form>
+                                    {% elif booking.status == 'confirmed' %}
+                                        <form method="post" action="{% url 'accounts:all_bookings' %}" class="d-inline">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="action" value="cancel">
+                                            <input type="hidden" name="booking_id" value="{{ booking.id }}">
+                                            <button type="submit" class="btn btn-warning" onclick="return confirm('Are you sure you want to cancel this booking?')">
+                                                <i class="fas fa-ban me-2"></i>Cancel Booking
+                                            </button>
+                                        </form>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p>All Rights Reserved, Copyright © 2025 Royal University of Phnom Penh (RUPP)</p>
+            <p>Russian Federation Boulevard, Toul Kork, Phnom Penh, Cambodia. Tel: 855-972 274 936</p>
+            <p>Designed by: DSE TEAM</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

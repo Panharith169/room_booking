@@ -1,0 +1,196 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management | RUPP Room Booking System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'AdminPage/css/user_management.css' %}">
+    <link rel="stylesheet" href="{% static 'AdminPage/css/responsive.css' %}">
+</head>
+<body>
+    <!-- Header -->
+    {% include 'AdminPage/includes/admin_header.html' %}
+
+    <!-- Messages -->
+    {% if messages %}
+        <div class="container mt-3">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-users"></i> User Management</h2>
+        </div>
+
+        <!-- Search and Filter Section -->
+        <div class="search-section">
+            <form method="get" class="filter-section">
+                <div class="input-group">
+                    <input type="text" name="search" class="form-control" placeholder="Search users..." value="{{ search_query }}">
+                    <button class="btn btn-outline-secondary" type="submit">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+                
+                <select name="role" class="form-select">
+                    <option value="">All Roles</option>
+                    <option value="admin" {% if selected_role == 'admin' %}selected{% endif %}>Admin</option>
+                    <option value="staff" {% if selected_role == 'staff' %}selected{% endif %}>Staff</option>
+                    <option value="user" {% if selected_role == 'user' %}selected{% endif %}>User</option>
+                </select>
+                
+                <select name="active" class="form-select">
+                    <option value="">All Status</option>
+                    <option value="true" {% if selected_active == 'true' %}selected{% endif %}>Active</option>
+                    <option value="false" {% if selected_active == 'false' %}selected{% endif %}>Inactive</option>
+                </select>
+                
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-filter"></i> Filter
+                </button>
+                
+                <a href="{% url 'booking:admin_user_management' %}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Clear
+                </a>
+            </form>
+        </div>
+
+        <!-- Users Table -->
+        <div class="users-table">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Email</th>
+                        <th>Student ID</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Join Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user_obj in users %}
+                        <tr>
+                            <td>
+                                <div class="user-info">
+                                    <div class="user-avatar">
+                                        {{ user_obj.first_name.0|default:user_obj.email.0|upper }}
+                                    </div>
+                                    <div class="user-details">
+                                        <h6>{{ user_obj.get_full_name|default:user_obj.email }}</h6>
+                                        <small>{{ user_obj.faculty|default:"N/A" }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ user_obj.email }}</td>
+                            <td>{{ user_obj.student_id|default:"N/A" }}</td>
+                            <td>
+                                {% if user_obj.is_admin %}
+                                    <span class="badge badge-primary">Admin</span>
+                                {% elif user_obj.is_staff %}
+                                    <span class="badge badge-warning">Staff</span>
+                                {% else %}
+                                    <span class="badge badge-secondary">User</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if user_obj.is_active %}
+                                    <span class="badge badge-success">Active</span>
+                                {% else %}
+                                    <span class="badge badge-danger">Inactive</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ user_obj.date_joined|date:"M d, Y" }}</td>
+                            <td>
+                                <!-- Navigate to dedicated pages with pre-selected user -->
+                                {% if user_obj.is_active %}
+                                    <a href="{% url 'accounts:deactivate_user' %}?user_email={{ user_obj.email }}" 
+                                       class="btn btn-sm btn-warning btn-action">
+                                        <i class="fas fa-user-slash"></i> Deactivate
+                                    </a>
+                                {% else %}
+                                    <a href="{% url 'accounts:deactivate_user' %}?user_email={{ user_obj.email }}" 
+                                       class="btn btn-sm btn-success btn-action">
+                                        <i class="fas fa-user-check"></i> Activate
+                                    </a>
+                                {% endif %}
+                                
+                                <a href="{% url 'accounts:all_bookings' %}?user={{ user_obj.id }}" 
+                                   class="btn btn-sm btn-info btn-action">
+                                    <i class="fas fa-calendar-alt"></i> Bookings
+                                </a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center">
+                                <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                                <p class="text-muted">No users found</p>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if users.has_other_pages %}
+            <nav aria-label="User pagination">
+                <ul class="pagination">
+                    {% if users.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ users.previous_page_number }}&search={{ search_query }}&role={{ selected_role }}&active={{ selected_active }}">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for page_num in users.paginator.page_range %}
+                        {% if page_num == users.number %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ page_num }}</span>
+                            </li>
+                        {% else %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_num }}&search={{ search_query }}&role={{ selected_role }}&active={{ selected_active }}">
+                                    {{ page_num }}
+                                </a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if users.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ users.next_page_number }}&search={{ search_query }}&role={{ selected_role }}&active={{ selected_active }}">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p>All Rights Reserved, Copyright © 2025 Royal University of Phnom Penh (RUPP)</p>
+            <p>Russian Federation Boulevard, Toul Kork, Phnom Penh, Cambodia. Tel: 855-972 274 936</p>
+            <p>Designed by: DSE TEAM</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

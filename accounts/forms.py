@@ -1,153 +1,207 @@
-# accounts/forms.py
 from django import forms
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, PasswordChangeForm
-from django.core.exceptions import ValidationError
-from django.core.validators import RegexValidator
-from .models import User
-import re
+from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm
+from django.contrib.auth import get_user_model
 
-class CustomUserRegistrationForm(UserCreationForm):
-    """Custom registration form for our User model"""
+User = get_user_model()
+
+class CustomUserCreationForm(UserCreationForm):
+    """Custom user registration form that matches your HTML frontend"""
+    
+    first_name = forms.CharField(
+        max_length=30,
+        required=True,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'First Name',
+            'id': 'firstName'
+        })
+    )
+    
+    last_name = forms.CharField(
+        max_length=30,
+        required=True,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Last Name',
+            'id': 'lastName'
+        })
+    )
     
     email = forms.EmailField(
         required=True,
         widget=forms.EmailInput(attrs={
             'class': 'form-control',
-            'placeholder': 'Enter your email address'
+            'placeholder': 'Email Address',
+            'id': 'email'
         })
     )
     
     student_id = forms.CharField(
         max_length=20,
-        required=True,
+        required=False,  # Make optional for flexibility
         widget=forms.TextInput(attrs={
             'class': 'form-control',
-            'placeholder': 'Enter your student ID'
-        }),
-        validators=[RegexValidator(
-            regex=r'^\d{8,12}$',
-            message='Student ID must be 8-12 digits'
-        )]
+            'placeholder': 'Student ID (optional)',
+            'id': 'studentId'
+        })
     )
     
     phone_number = forms.CharField(
-        max_length=15,
-        required=True,
+        max_length=20,
+        required=False,
         widget=forms.TextInput(attrs={
             'class': 'form-control',
-            'placeholder': 'Enter your phone number'
-        }),
-        validators=[RegexValidator(
-            regex=r'^\+?1?\d{9,15}$',
-            message='Phone number must be 9-15 digits'
-        )]
+            'placeholder': 'Phone Number (optional)',
+            'id': 'phoneNumber'
+        })
+    )
+    
+    faculty = forms.ChoiceField(
+        choices=[('', 'Select Faculty')] + User.FACULTY_CHOICES,
+        required=False,
+        widget=forms.Select(attrs={
+            'class': 'form-control',
+            'id': 'faculty'
+        })
+    )
+    
+    department = forms.CharField(
+        max_length=100,
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Department (optional)',
+            'id': 'department'
+        })
+    )
+    
+    password1 = forms.CharField(
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Password',
+            'id': 'password'
+        })
+    )
+    
+    password2 = forms.CharField(
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Confirm Password',
+            'id': 'confirmPassword'
+        })
     )
     
     class Meta:
         model = User
-        fields = ('email', 'student_id', 'phone_number', 'password1', 'password2')
-        widgets = {
-            'password1': forms.PasswordInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Enter password'
-            }),
-            'password2': forms.PasswordInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Confirm password'
-            }),
-        }
-
+        fields = ('first_name', 'last_name', 'email', 'student_id', 'phone_number', 'faculty', 'department')
+    
     def clean_email(self):
         email = self.cleaned_data.get('email')
         if User.objects.filter(email=email).exists():
-            raise ValidationError("A user with this email already exists.")
+            raise forms.ValidationError("A user with this email already exists.")
         return email
-
+    
     def clean_student_id(self):
         student_id = self.cleaned_data.get('student_id')
-        if User.objects.filter(student_id=student_id).exists():
-            raise ValidationError("A user with this student ID already exists.")
+        if student_id and User.objects.filter(student_id=student_id).exists():
+            raise forms.ValidationError("This student ID is already registered.")
         return student_id
-
-
-class CustomLoginForm(AuthenticationForm):
-    """Custom login form using email as username"""
     
-    username = forms.EmailField(
-        label='Email',
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.email = self.cleaned_data['email']
+        user.first_name = self.cleaned_data['first_name']
+        user.last_name = self.cleaned_data['last_name']
+        user.student_id = self.cleaned_data.get('student_id') or f"USR{User.objects.count() + 1:06d}"
+        user.phone_number = self.cleaned_data.get('phone_number') or "000-000-0000"
+        user.faculty = self.cleaned_data.get('faculty', '')
+        user.department = self.cleaned_data.get('department', '')
+        
+        if commit:
+            user.save()
+        return user
+
+class CustomLoginForm(forms.Form):
+    """Custom login form that matches your HTML frontend"""
+    
+    email = forms.EmailField(
         widget=forms.EmailInput(attrs={
             'class': 'form-control',
-            'placeholder': 'Enter your email address',
-            'autofocus': True
+            'placeholder': 'Email Address',
+            'id': 'username',  # Your HTML uses 'username' id
+            'name': 'username'  # Your HTML uses 'username' name
         })
     )
     
     password = forms.CharField(
         widget=forms.PasswordInput(attrs={
             'class': 'form-control',
-            'placeholder': 'Enter your password'
+            'placeholder': 'Password',
+            'id': 'password'
         })
     )
 
-    def clean_username(self):
-        email = self.cleaned_data.get('username')
-        if not User.objects.filter(email=email).exists():
-            raise ValidationError("No user found with this email address.")
-        return email
-
-
-class UserProfileForm(forms.ModelForm):
-    """Form for updating user profile information"""
-    
-    class Meta:
-        model = User
-        fields = ('first_name', 'last_name', 'email', 'phone_number')
-        widgets = {
-            'first_name': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'First Name'
-            }),
-            'last_name': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Last Name'
-            }),
-            'email': forms.EmailInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Email Address'
-            }),
-            'phone_number': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Phone Number'
-            }),
-        }
-
-    def clean_email(self):
-        email = self.cleaned_data.get('email')
-        if User.objects.filter(email=email).exclude(pk=self.instance.pk).exists():
-            raise ValidationError("A user with this email already exists.")
-        return email
-
-
 class CustomPasswordChangeForm(PasswordChangeForm):
-    """Custom styled password change form"""
+    """Custom password change form with your styling"""
     
     old_password = forms.CharField(
         widget=forms.PasswordInput(attrs={
             'class': 'form-control',
-            'placeholder': 'Current password'
+            'placeholder': 'Current password',
+            'id': 'currentPassword'
         })
     )
     
     new_password1 = forms.CharField(
         widget=forms.PasswordInput(attrs={
             'class': 'form-control',
-            'placeholder': 'New password'
+            'placeholder': 'New password',
+            'id': 'newPassword'
         })
     )
     
     new_password2 = forms.CharField(
         widget=forms.PasswordInput(attrs={
             'class': 'form-control',
-            'placeholder': 'Confirm new password'
+            'placeholder': 'Confirm new password',
+            'id': 'confirmPassword'
         })
     )
+
+class UserUpdateForm(forms.ModelForm):
+    """Form for updating user profile"""
+    
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'email', 'phone_number', 'faculty', 'department']
+        widgets = {
+            'first_name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'First Name',
+                'id': 'firstName'
+            }),
+            'last_name': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Last Name',
+                'id': 'lastName'
+            }),
+            'email': forms.EmailInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Email Address',
+                'id': 'email'
+            }),
+            'phone_number': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Phone Number',
+                'id': 'phoneNumber'
+            }),
+            'faculty': forms.Select(attrs={
+                'class': 'form-control',
+                'id': 'faculty'
+            }),
+            'department': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Department',
+                'id': 'department'
+            }),
+        }
