@@ -1,5 +1,9 @@
 import os
+import pymysql
 from .settings import *
+
+# Enable PyMySQL to work as MySQL driver
+pymysql.install_as_MySQLdb()
 
 # Production settings for Render
 DEBUG = False
@@ -11,11 +15,18 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
 ]
 
-# Use SQLite for now (simple and works)
+# Use MySQL database (same as your original project)
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': os.environ.get('MYSQL_DATABASE', 'room_booking_db'),
+        'USER': os.environ.get('MYSQL_USER', 'root'),
+        'PASSWORD': os.environ.get('MYSQL_PASSWORD', ''),
+        'HOST': os.environ.get('MYSQL_HOST', 'localhost'),
+        'PORT': os.environ.get('MYSQL_PORT', '3306'),
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+        },
     }
 }
 
