@@ -11,12 +11,125 @@
     <title>Settings | RUPP Room Booking System</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'AdminPage/css/setting.css' %}">
+    <link rel="stylesheet" href="{% static 'AdminPage/css/profileSetting.css' %}">
     <link rel="stylesheet" href="{% static 'AdminPage/css/responsive.css' %}">
+    <style>
+    /* Mobile styles for screens < 768px */
+    @media (max-width: 767px) {
+        body {
+            font-size: 15px;
+        }
+        .container {
+            padding: 0 5px;
+        }
+        .profile-container {
+            padding: 10px 0;
+        }
+        .profile-header {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        .profile-image img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+        }
+        .profile-info h1 {
+            font-size: 1.3rem;
+        }
+        .profile-info p {
+            font-size: 1rem;
+        }
+        .profile-form {
+            padding: 0;
+        }
+        .form-section h3 {
+            font-size: 1.1rem;
+        }
+        .form-grid {
+            display: block;
+        }
+        .form-group {
+            margin-bottom: 12px;
+        }
+        .form-control {
+            font-size: 1rem;
+            padding: 8px;
+        }
+        .form-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .form-actions .btn {
+            width: 100%;
+        }
+        .footer-content {
+            font-size: 0.9rem;
+            text-align: center;
+        }
+        /* Responsive navbar (hamburger menu) */
+        .navbar {
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .navbar-nav {
+            display: none;
+            flex-direction: column;
+            background: #fff;
+            position: absolute;
+            top: 60px;
+            left: 0;
+            width: 100%;
+            z-index: 999;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .navbar-nav.show {
+            display: flex;
+        }
+        .navbar-toggler {
+            display: block;
+            background: none;
+            border: none;
+            font-size: 1.7rem;
+            color: #333;
+        }
+        .navbar-brand {
+            font-size: 1.1rem;
+        }
+    }
+    /* Hide hamburger on desktop */
+    @media (min-width: 768px) {
+        .navbar-toggler {
+            display: none;
+        }
+        .navbar-nav {
+            display: flex !important;
+            position: static;
+            flex-direction: row;
+            background: none;
+            box-shadow: none;
+        }
+    }
+    </style>
 </head>
 <body>
     <!-- Header -->
     {% include 'AdminPage/includes/admin_header.html' %}
+    <script>
+    // Hamburger menu toggle for mobile
+    document.addEventListener('DOMContentLoaded', function() {
+        var toggler = document.querySelector('.navbar-toggler');
+        var nav = document.querySelector('.navbar-nav');
+        if (toggler && nav) {
+            toggler.addEventListener('click', function() {
+                nav.classList.toggle('show');
+            });
+        }
+    });
+    </script>
 
     <!-- Messages -->
     {% if messages %}
@@ -30,245 +143,100 @@
         </div>
     {% endif %}
 
-    <!-- Main Content -->
-    <main>
-        <div class="container-fluid">
-            <div class="d-sm-flex align-items-center justify-content-between mb-4">
-                <h1 class="h3 mb-0 text-gray-800">System Settings</h1>
+    <div class="container">
+        <div class="profile-container">
+            <div class="profile-header">
+                <div class="profile-image">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSt08ADSBsRRxQ2xzvxjADA0SCVuwEwY6gASg&s" alt="Profile">
+                </div>
+                <div class="profile-info">
+                    <h1>Profile Settings</h1>
+                    <p>Manage your account information and preferences</p>
+                </div>
             </div>
 
-            <div class="settings-container">
-            <div class="settings-header">
-                <div class="row align-items-center">
-                    <div class="col-auto">
-                        <div class="settings-icon">
-                            <i class="fas fa-cog fa-3x text-primary"></i>
+            <div class="profile-form">
+                <form id="profileForm" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="update_profile" />
+                    <div class="form-section">
+                        <h3><i class="fas fa-user"></i> Personal Information</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="first_name">First Name</label>
+                                <input type="text" class="form-control" id="first_name" name="first_name" value="{{ user.first_name }}" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="last_name">Last Name</label>
+                                <input type="text" class="form-control" id="last_name" name="last_name" value="{{ user.last_name }}" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            <input type="email" class="form-control" id="email" value="{{ user.email }}" readonly>
+                            <small class="form-text text-muted">Email cannot be changed</small>
                         </div>
                     </div>
-                    <div class="col">
-                        <h2 class="mb-1">System Settings</h2>
-                        <p class="text-muted mb-0">Manage your system preferences and security settings</p>
-                    </div>
-                </div>
-            </div>
 
-            <!-- Settings Navigation -->
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Settings Categories</h6>
-                </div>
-                <div class="card-body">
-                    <div class="settings-tabs">
-                        <button class="tab-button active" data-tab="password">
-                            <i class="fas fa-key"></i> Change Password
+                    <div class="form-section">
+                        <h3><i class="fas fa-university"></i> Academic Information</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="faculty">Faculty</label>
+                                <input type="text" class="form-control" id="faculty" name="faculty" value="{{ user.faculty }}">
+                            </div>
+                            <div class="form-group">
+                                <label for="department">Department</label>
+                                <input type="text" class="form-control" id="department" name="department" value="{{ user.department }}">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="phone_number">Phone Number</label>
+                            <input type="text" class="form-control" id="phone_number" name="phone_number" value="{{ user.phone_number }}">
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Update Profile
                         </button>
-                        <button class="tab-button" data-tab="security">
-                            <i class="fas fa-shield-alt"></i> Security
-                        </button>
-                        <button class="tab-button" data-tab="preferences">
-                            <i class="fas fa-sliders-h"></i> Preferences
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Settings Content -->
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Settings Configuration</h6>
-                </div>
-                <div class="card-body">
-                    <div class="tab-content">
-                <!-- Password Tab -->
-                <div class="tab-pane active" id="password">
-                    <div class="setting-section">
-                        <h3><i class="fas fa-key"></i> Change Password</h3>
-                        <p>Update your account password to keep your account secure.</p>
-                        
-                        {% if form %}
-                            <form method="post" class="password-form">
-                                {% csrf_token %}
-                                <input type="hidden" name="action" value="change_password">
-                                
-                                <div class="form-group">
-                                    <label for="{{ form.old_password.id_for_label }}">Current Password</label>
-                                    {{ form.old_password }}
-                                    {% if form.old_password.errors %}
-                                        <div class="error-message">
-                                            {{ form.old_password.errors.0 }}
-                                        </div>
-                                    {% endif %}
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="{{ form.new_password1.id_for_label }}">New Password</label>
-                                    {{ form.new_password1 }}
-                                    {% if form.new_password1.errors %}
-                                        <div class="error-message">
-                                            {{ form.new_password1.errors.0 }}
-                                        </div>
-                                    {% endif %}
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="{{ form.new_password2.id_for_label }}">Confirm New Password</label>
-                                    {{ form.new_password2 }}
-                                    {% if form.new_password2.errors %}
-                                        <div class="error-message">
-                                            {{ form.new_password2.errors.0 }}
-                                        </div>
-                                    {% endif %}
-                                </div>
-                                
-                                <div class="form-actions">
-                                    <button type="submit" class="btn btn-primary">
-                                        <i class="fas fa-save"></i> Change Password
-                                    </button>
-                                </div>
-                            </form>
-                        {% else %}
-                            <div class="alert alert-warning">
-                                <i class="fas fa-exclamation-triangle"></i>
-                                Password change form is not available at the moment.
-                            </div>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <!-- Security Tab -->
-                <div class="tab-pane" id="security">
-                    <div class="setting-section">
-                        <h3><i class="fas fa-shield-alt"></i> Security Settings</h3>
-                        <p>Manage your account security and access permissions.</p>
-                        
-                        <div class="security-options">
-                            <div class="security-item">
-                                <div class="security-info">
-                                    <h4>Two-Factor Authentication</h4>
-                                    <p>Add an extra layer of security to your account</p>
-                                </div>
-                                <div class="security-action">
-                                    <button class="btn btn-outline-primary" onclick="enableTwoFactor()">Enable</button>
-                                </div>
-                            </div>
-                            
-                            <div class="security-item">
-                                <div class="security-info">
-                                    <h4>Login Notifications</h4>
-                                    <p>Get notified when someone logs into your account</p>
-                                </div>
-                                <div class="security-action">
-                                    <label class="toggle-switch">
-                                        <input type="checkbox" checked onchange="toggleSecurity('login_notifications', this.checked)">
-                                        <span class="slider"></span>
-                                    </label>
-                                </div>
-                            </div>
-                            
-                            <div class="security-item">
-                                <div class="security-info">
-                                    <h4>Session Timeout</h4>
-                                    <p>Automatically log out after period of inactivity</p>
-                                </div>
-                                <div class="security-action">
-                                    <select class="form-control" onchange="updateSessionTimeout(this.value)">
-                                        <option value="30">30 minutes</option>
-                                        <option value="60" selected>1 hour</option>
-                                        <option value="120">2 hours</option>
-                                        <option value="240">4 hours</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Preferences Tab -->
-                <div class="tab-pane" id="preferences">
-                    <div class="setting-section">
-                        <h3><i class="fas fa-sliders-h"></i> System Preferences</h3>
-                        <p>Customize your system experience and notifications.</p>
-                        
-                        <div class="preferences-options">
-                            <div class="preference-item">
-                                <div class="preference-info">
-                                    <h4>Email Notifications</h4>
-                                    <p>Receive email notifications for important updates</p>
-                                </div>
-                                <div class="preference-action">
-                                    <label class="toggle-switch">
-                                        <input type="checkbox" checked onchange="updatePreference('email_notifications', this.checked)">
-                                        <span class="slider"></span>
-                                    </label>
-                                </div>
-                            </div>
-                            
-                            <div class="preference-item">
-                                <div class="preference-info">
-                                    <h4>System Language</h4>
-                                    <p>Choose your preferred language</p>
-                                </div>
-                                <div class="preference-action">
-                                    <select class="form-control" onchange="updatePreference('language', this.value)">
-                                        <option value="en" selected>English</option>
-                                        <option value="km">Khmer</option>
-                                        <option value="fr">French</option>
-                                    </select>
-                                </div>
-                            </div>
-                            
-                            <div class="preference-item">
-                                <div class="preference-info">
-                                    <h4>Date Format</h4>
-                                    <p>Select your preferred date format</p>
-                                </div>
-                                <div class="preference-action">
-                                    <select class="form-control" onchange="updatePreference('date_format', this.value)">
-                                        <option value="mm/dd/yyyy" selected>MM/DD/YYYY</option>
-                                        <option value="dd/mm/yyyy">DD/MM/YYYY</option>
-                                        <option value="yyyy-mm-dd">YYYY-MM-DD</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="form-actions">
-                            <button type="button" class="btn btn-primary" onclick="saveAllPreferences()">
-                                <i class="fas fa-save"></i> Save Preferences
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Navigation Actions -->
-            <div class="card shadow mb-4">
-                <div class="card-body">
-                    <div class="settings-actions">
                         <a href="{% url 'accounts:admin_dashboard' %}" class="btn btn-secondary">
                             <i class="fas fa-arrow-left"></i> Back to Dashboard
                         </a>
                     </div>
-                </div>
-            </div>
+                </form>
+                <div id="updateMessage" class="mt-3"></div>
             </div>
         </div>
-    </main>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{% static 'AdminPage/js/setting.js' %}"></script>
-    <script src="{% static 'AdminPage/js/adminRealtime.js' %}"></script>
-    <script src="{% static 'AdminPage/js/mobile-enhancements.js' %}"></script>
+    <script>
+    // AJAX for profile update
+    document.getElementById('profileForm').onsubmit = function(e) {
+        e.preventDefault();
+        var form = this;
+        var formData = new FormData(form);
+        fetch(window.location.href, {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            var msgDiv = document.getElementById('updateMessage');
+            if (data.success) {
+                msgDiv.innerHTML = '<div class="alert alert-success">' + data.message + '</div>';
+            } else {
+                msgDiv.innerHTML = '<div class="alert alert-danger">' + data.message + '</div>';
+            }
+        })
+        .catch(() => {
+            document.getElementById('updateMessage').innerHTML = '<div class="alert alert-danger">Update failed. Please try again.</div>';
+        });
+    };
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="footer-content">
-            <p>All Rights Reserved, Copyright © 2025 Royal University of Phnom Penh (RUPP)</p>
-            <p>Russian Federation Boulevard, Toul Kork, Phnom Penh, Cambodia. Tel: 855-972 274 936</p>
-            <p>Designed by: DSE TEAM</p>
-        </div>
-    </footer>
+    // ...existing code...
+    </script>
 </body>
 </html>

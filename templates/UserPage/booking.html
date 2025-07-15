@@ -334,21 +334,23 @@
                     .then(response => response.json())
                     .then(data => {
                         roomSelect.innerHTML = '<option value="" disabled selected>Select Room</option>';
-                        
                         if (data.rooms && data.rooms.length > 0) {
                             data.rooms.forEach(room => {
+                                const option = document.createElement('option');
+                                option.value = room.id;
+                                option.textContent = `${room.name} (${room.room_number}) - Capacity: ${room.capacity}`;
+                                option.dataset.roomInfo = JSON.stringify(room);
                                 if (room.available) {
-                                    const option = document.createElement('option');
-                                    option.value = room.id;
-                                    option.textContent = `${room.name} (${room.room_number}) - Capacity: ${room.capacity}`;
-                                    option.dataset.roomInfo = JSON.stringify(room);
-                                    roomSelect.appendChild(option);
+                                    option.textContent += ' [Available]';
+                                } else {
+                                    option.textContent += ' [Unavailable]';
                                 }
+                                roomSelect.appendChild(option);
                             });
                         } else {
                             const option = document.createElement('option');
                             option.value = '';
-                            option.textContent = 'No rooms available';
+                            option.textContent = 'No rooms found';
                             option.disabled = true;
                             roomSelect.appendChild(option);
                         }
@@ -390,16 +392,6 @@
             document.getElementById('successModal').style.display = 'none';
         }
 
-        // Show success modal if booking was successful
-        {% if messages %}
-            {% for message in messages %}
-                {% if message.tags == 'success' %}
-                    setTimeout(() => {
-                        showSuccessModal();
-                    }, 100);
-                {% endif %}
-            {% endfor %}
-        {% endif %}
     </script>
 
     <!-- Autofill Script for URL Parameters -->

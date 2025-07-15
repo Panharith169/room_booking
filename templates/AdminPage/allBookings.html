@@ -140,54 +140,6 @@
                 </div>
             </div>
 
-            <!-- Filters -->
-            <div class="card filters-card">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        <i class="fas fa-filter me-2"></i>Filter Bookings
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <form method="GET" class="row g-3">
-                        <div class="col-md-3">
-                            <label class="form-label">Status</label>
-                            <select name="status" class="form-select">
-                                <option value="">All Status</option>
-                                <option value="pending" {% if request.GET.status == 'pending' %}selected{% endif %}>Pending</option>
-                                <option value="confirmed" {% if request.GET.status == 'confirmed' %}selected{% endif %}>Confirmed</option>
-                                <option value="cancelled" {% if request.GET.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label">Room</label>
-                            <select name="room" class="form-select">
-                                <option value="">All Rooms</option>
-                                {% for room in rooms %}
-                                    <option value="{{ room.id }}" {% if request.GET.room == room.id|slugify %}selected{% endif %}>
-                                        {{ room.name }}
-                                    </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label">Date From</label>
-                            <input type="date" name="date_from" class="form-control" value="{{ request.GET.date_from }}">
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label">Date To</label>
-                            <input type="date" name="date_to" class="form-control" value="{{ request.GET.date_to }}">
-                        </div>
-                        <div class="col-12">
-                            <button type="submit" class="btn btn-primary me-2">
-                                <i class="fas fa-search me-2"></i>Filter
-                            </button>
-                            <a href="{% url 'accounts:all_bookings' %}" class="btn btn-outline-secondary">
-                                <i class="fas fa-times me-2"></i>Clear
-                            </a>
-                        </div>
-                    </form>
-                </div>
-            </div>
 
             <!-- Bookings Table -->
             <div class="card">
@@ -226,8 +178,9 @@
                                         <td>
                                             <div class="fw-medium">{{ booking.room.name }}</div>
                                             <small class="text-muted">{{ booking.room.room_number }}</small>
+                                            <!-- No need to show 'Occupied' here, just show booking info -->
                                         </td>
-                                        <td>{{ booking.date|date:"M d, Y" }}</td>
+                                        <td>{{ booking.start_time|date:"M d, Y" }}</td>
                                         <td>{{ booking.start_time|time:"H:i" }} - {{ booking.end_time|time:"H:i" }}</td>
                                         <td>
                                             {% if booking.status == 'pending' %}
@@ -410,20 +363,6 @@
         function viewBooking(id) {
             // Redirect to admin booking detail page
             window.location.href = '{% url "accounts:admin_booking_detail" 0 %}'.replace('0', id);
-        }
-
-        function filterBookings() {
-            const filter = document.getElementById('statusFilter').value;
-            const rows = document.querySelectorAll('#bookingsTable tr');
-            
-            rows.forEach(row => {
-                const status = row.getAttribute('data-status');
-                if (filter === '' || status === filter) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
         }
     </script>
 

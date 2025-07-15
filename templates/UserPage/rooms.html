@@ -33,6 +33,9 @@
         <div class="hero-content">
             <h2>Available Rooms</h2>
             <p>Browse all available rooms for booking</p>
+            <div class="mt-2">
+                <span class="badge bg-primary">Total Rooms: {{ total_rooms }}</span>
+            </div>
         </div>
     </section>
 
@@ -78,7 +81,11 @@
             <div class="room-card" data-type="{{ room.room_type }}" data-capacity="{{ room.capacity }}">
                 <div class="room-header">
                     <h3>{{ room.name }}</h3>
-                    <span class="room-status available">Available</span>
+                    {% if room.availability_status == 'occupied' or not room.is_available %}
+                        <span class="room-status occupied">Occupied</span>
+                    {% else %}
+                        <span class="room-status available">Available</span>
+                    {% endif %}
                 </div>
                 <div class="room-info">
                     <div class="info-item">
@@ -107,9 +114,13 @@
                     {% endif %}
                 </div>
                 <div class="room-actions">
-                    <a href="{% url 'accounts:booking' %}?building={{ room.building|default:'Building A' }}&room={{ room.room_number }}&room_id={{ room.id }}&date={{ today|date:'Y-m-d' }}" class="btn btn-primary">
-                        <i class="bi bi-calendar-plus"></i> Book Now
-                    </a>
+                    {% if room.availability_status == 'occupied' or not room.is_available %}
+                        <button class="btn btn-secondary" disabled><i class="bi bi-calendar-x"></i> Occupied</button>
+                    {% else %}
+                        <a href="{% url 'accounts:booking' %}?building={{ room.building|default:'Building A' }}&room={{ room.room_number }}&room_id={{ room.id }}&date={{ today|date:'Y-m-d' }}" class="btn btn-primary">
+                            <i class="bi bi-calendar-plus"></i> Book Now
+                        </a>
+                    {% endif %}
                 </div>
             </div>
             {% empty %}

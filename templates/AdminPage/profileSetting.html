@@ -41,6 +41,7 @@
             <div class="profile-form">
                 <form method="post">
                     {% csrf_token %}
+                    <input type="hidden" name="action" value="update_profile" />
                     <div class="form-section">
                         <h3><i class="fas fa-user"></i> Personal Information</h3>
                         <div class="form-grid">

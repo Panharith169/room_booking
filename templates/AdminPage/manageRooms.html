@@ -61,11 +61,15 @@
                                     <td>{{ room.room_type|capfirst }}</td>
                                     <td>{{ room.capacity }}</td>
                                     <td>
-                                        {% if room.is_available %}
-                                            <span class="badge bg-success">Available</span>
-                                        {% else %}
-                                            <span class="badge bg-danger">Unavailable</span>
-                                        {% endif %}
+                                        {% with current_booking=room.get_current_booking %}
+                                            {% if current_booking %}
+                                                <span class="badge bg-warning text-dark">Occupied</span>
+                                            {% elif room.is_available %}
+                                                <span class="badge bg-success">Available</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">Unavailable</span>
+                                            {% endif %}
+                                        {% endwith %}
                                     </td>
                                     <td>
                                         <div class="btn-group btn-group-sm">

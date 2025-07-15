@@ -156,7 +156,113 @@
         padding-right: 1rem;
     }
 }
-
+/* Universal responsive styles for all templates */
+@media (max-width: 767px) {
+    body {
+        font-size: 15px;
+    }
+    .container {
+        padding: 0 5px;
+    }
+    .profile-container,
+    .main-content,
+    .admin-content,
+    .user-content {
+        padding: 10px 0;
+    }
+    .profile-header,
+    .admin-header,
+    .user-header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+    .profile-image img,
+    .admin-image img,
+    .user-image img {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+    }
+    h1, h2, h3 {
+        font-size: 1.3rem;
+    }
+    p, label, .form-text {
+        font-size: 1rem;
+    }
+    .profile-form,
+    .admin-form,
+    .user-form {
+        padding: 0;
+    }
+    .form-section h3 {
+        font-size: 1.1rem;
+    }
+    .form-grid {
+        display: block;
+    }
+    .form-group {
+        margin-bottom: 12px;
+    }
+    .form-control {
+        font-size: 1rem;
+        padding: 8px;
+    }
+    .form-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    .form-actions .btn {
+        width: 100%;
+    }
+    .footer-content {
+        font-size: 0.9rem;
+        text-align: center;
+    }
+    /* Responsive navbar (hamburger menu) */
+    .navbar {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .navbar-nav {
+        display: none;
+        flex-direction: column;
+        background: #fff;
+        position: absolute;
+        top: 60px;
+        left: 0;
+        width: 100%;
+        z-index: 999;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .navbar-nav.show {
+        display: flex;
+    }
+    .navbar-toggler {
+        display: block;
+        background: none;
+        border: none;
+        font-size: 1.7rem;
+        color: #333;
+    }
+    .navbar-brand {
+        font-size: 1.1rem;
+    }
+}
+@media (min-width: 768px) {
+    .navbar-toggler {
+        display: none;
+    }
+    .navbar-nav {
+        display: flex !important;
+        position: static;
+        flex-direction: row;
+        background: none;
+        box-shadow: none;
+    }
+}
 /* Small phones (up to 480px) */
 @media (max-width: 480px) {
     .container, .container-fluid {

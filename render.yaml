@@ -19,6 +19,6 @@ services:
       - key: MYSQL_PASSWORD
         value: secure_password_123
       - key: MYSQL_HOST
-        value: localhost
+        value: room-booking-db.internal
       - key: MYSQL_PORT
         value: 3306

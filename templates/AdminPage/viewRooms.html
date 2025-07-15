@@ -67,29 +67,16 @@
         
         .room-image {
             height: 200px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border-radius: 12px 12px 0 0;
             position: relative;
             overflow: hidden;
+            background: none;
         }
-        
         .room-image::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.1);
+            display: none;
         }
-        
         .room-image i {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 3rem;
-            color: rgba(255,255,255,0.8);
+            display: none;
         }
         
         .availability-badge {
@@ -182,13 +169,10 @@
                     <div class="stat-number text-warning">{{ occupied_rooms|default:0 }}</div>
                     <div class="stat-label">Occupied Rooms</div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-number text-info">{{ maintenance_rooms|default:0 }}</div>
-                    <div class="stat-label">Under Maintenance</div>
-                </div>
+    
             </div>
 
-            <!-- Filters -->
+            {% comment %} <!-- Filters -->
             <div class="card filters-card">
                 <div class="card-header">
                     <h5 class="mb-0">
@@ -231,18 +215,17 @@
                             <a href="{% url 'accounts:admin_view_rooms' %}" class="btn btn-outline-secondary">
                                 <i class="fas fa-times me-2"></i>Clear
                             </a>
-                        </div>
-                    </form>
+                        </div> {% endcomment %}
+                    {% comment %} </form>
                 </div>
-            </div>
+            </div> {% endcomment %}
 
             <!-- Rooms Grid View -->
             <div class="row">
                 {% for room in rooms %}
                     <div class="col-lg-4 col-md-6 mb-4">
                         <div class="room-card">
-                            <div class="room-image">
-                                <i class="fas fa-door-open"></i>
+                            <div class="room-image" style="background-image: url('{{ room.image_url|default:'/static/images/desk_and_chairs_are_installed_beforePCarrived1.jpg' }}'); height: 200px; border-radius: 12px 12px 0 0; position: relative; overflow: hidden; background-size: cover; background-position: center;">
                                 <span class="availability-badge">
                                     {% if room.is_available %}
                                         <span class="badge bg-success">Available</span>

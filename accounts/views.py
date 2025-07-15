@@ -427,6 +427,12 @@ def booked_view(request):
                         if booking.can_cancel:
                             booking.status = 'cancelled'
                             booking.save()
+                            room = booking.room
+                            # If no other confirmed bookings for this room, mark as available
+                            if not room.bookings.filter(status='confirmed').exclude(id=booking.id).exists():
+                                room.availability_status = 'available'
+                                room.is_available = True
+                                room.save()
                             messages.success(request, f'Booking for {booking.room.name} has been cancelled.')
                         else:
                             messages.error(request, 'This booking cannot be cancelled.')
@@ -507,11 +513,18 @@ def view_rooms_view(request):
         messages.error(request, f'Error loading rooms: {str(e)}')
         rooms = []
     
+    try:
+        from booking.models import Room
+        total_rooms = Room.objects.count()
+    except:
+        total_rooms = len(rooms) if isinstance(rooms, list) else 0
+
     context = {
         'user': request.user,
         'user_role': user_role,
         'rooms': rooms,
         'today': timezone.now().date(),
+        'total_rooms': total_rooms,
     }
     
     return render(request, 'UserPage/rooms.html', context)
@@ -526,12 +539,27 @@ def admin_view_rooms_view(request):
     try:
         from booking.models import Room
         rooms = Room.objects.all().order_by('room_number')
-        
+
+        # Add image field for consistency with user view
+        rooms_data = []
+        for room in rooms:
+            rooms_data.append({
+                'id': room.id,
+                'name': room.name,
+                'room_number': room.room_number,
+                'capacity': room.capacity,
+                'room_type': room.room_type,
+                'is_available': room.is_available,
+                'description': room.description,
+                'equipment': room.equipment,
+                'image_url': room.image.url if getattr(room, 'image', None) else '/static/images/default-room.jpg',
+            })
+
         # Get room statistics
         total_rooms = rooms.count()
         available_rooms = rooms.filter(is_available=True).count()
         unavailable_rooms = rooms.filter(is_available=False).count()
-        
+
         # Add search functionality
         search_query = request.GET.get('search', '')
         if search_query:
@@ -540,20 +568,20 @@ def admin_view_rooms_view(request):
                 Q(room_number__icontains=search_query) |
                 Q(description__icontains=search_query)
             )
-        
+
         # Filter by room type
         room_type = request.GET.get('room_type', '')
         if room_type:
             rooms = rooms.filter(room_type=room_type)
-        
+
         # Filter by availability
         availability = request.GET.get('availability', '')
         if availability:
             rooms = rooms.filter(is_available=(availability == 'true'))
-        
+
         # Get room types for filter dropdown
         room_types = Room.ROOM_TYPES
-        
+
         # Group rooms by type
         room_types_dict = {}
         for room in rooms:
@@ -561,29 +589,29 @@ def admin_view_rooms_view(request):
             if room_type not in room_types_dict:
                 room_types_dict[room_type] = []
             room_types_dict[room_type].append(room)
-        
+
     except ImportError:
         # Fallback if booking models don't exist
-        rooms = [
-            {'id': 1, 'name': 'Conference Room A', 'room_number': 'A-201', 'capacity': 20, 'room_type': 'conference', 'is_available': True, 'description': 'Modern conference room', 'equipment': 'Projector, Whiteboard'},
-            {'id': 2, 'name': 'Computer Lab 1', 'room_number': 'A-206', 'capacity': 30, 'room_type': 'lab', 'is_available': True, 'description': 'Fully equipped computer lab', 'equipment': '30 PCs, Projector'},
-            {'id': 3, 'name': 'Lecture Hall', 'room_number': 'A-101', 'capacity': 100, 'room_type': 'classroom', 'is_available': False, 'description': 'Large lecture hall', 'equipment': 'Audio system, Projector'},
-            {'id': 4, 'name': 'Chemistry Lab', 'room_number': 'S-309', 'capacity': 25, 'room_type': 'lab', 'is_available': True, 'description': 'Chemistry laboratory', 'equipment': 'Lab equipment, Safety gear'},
-            {'id': 5, 'name': 'Study Room 1', 'room_number': 'B-105', 'capacity': 8, 'room_type': 'study', 'is_available': True, 'description': 'Quiet study room', 'equipment': 'Whiteboard, Tables'},
-            {'id': 6, 'name': 'Meeting Room B', 'room_number': 'B-202', 'capacity': 15, 'room_type': 'conference', 'is_available': False, 'description': 'Small meeting room', 'equipment': 'TV, Conference phone'},
+        rooms_data = [
+            {'id': 1, 'name': 'Conference Room A', 'room_number': 'A-201', 'capacity': 20, 'room_type': 'conference', 'is_available': True, 'description': 'Modern conference room', 'equipment': 'Projector, Whiteboard', 'image_url': '/static/images/default-room.jpg'},
+            {'id': 2, 'name': 'Computer Lab 1', 'room_number': 'A-206', 'capacity': 30, 'room_type': 'lab', 'is_available': True, 'description': 'Fully equipped computer lab', 'equipment': '30 PCs, Projector', 'image_url': '/static/images/default-room.jpg'},
+            {'id': 3, 'name': 'Lecture Hall', 'room_number': 'A-101', 'capacity': 100, 'room_type': 'classroom', 'is_available': False, 'description': 'Large lecture hall', 'equipment': 'Audio system, Projector', 'image_url': '/static/images/default-room.jpg'},
+            {'id': 4, 'name': 'Chemistry Lab', 'room_number': 'S-309', 'capacity': 25, 'room_type': 'lab', 'is_available': True, 'description': 'Chemistry laboratory', 'equipment': 'Lab equipment, Safety gear', 'image_url': '/static/images/default-room.jpg'},
+            {'id': 5, 'name': 'Study Room 1', 'room_number': 'B-105', 'capacity': 8, 'room_type': 'study', 'is_available': True, 'description': 'Quiet study room', 'equipment': 'Whiteboard, Tables', 'image_url': '/static/images/default-room.jpg'},
+            {'id': 6, 'name': 'Meeting Room B', 'room_number': 'B-202', 'capacity': 15, 'room_type': 'conference', 'is_available': False, 'description': 'Small meeting room', 'equipment': 'TV, Conference phone', 'image_url': '/static/images/default-room.jpg'},
         ]
-        total_rooms = len(rooms)
-        available_rooms = sum(1 for room in rooms if room.get('is_available', True))
+        total_rooms = len(rooms_data)
+        available_rooms = sum(1 for room in rooms_data if room.get('is_available', True))
         unavailable_rooms = total_rooms - available_rooms
-        
+
         # Group fallback rooms by type
         room_types_dict = {}
-        for room in rooms:
+        for room in rooms_data:
             room_type = room['room_type']
             if room_type not in room_types_dict:
                 room_types_dict[room_type] = []
             room_types_dict[room_type].append(room)
-        
+
         room_types = [
             ('classroom', 'Classroom'),
             ('lab', 'Laboratory'),
@@ -595,7 +623,7 @@ def admin_view_rooms_view(request):
         ]
     except Exception as e:
         messages.error(request, f'Error loading rooms: {str(e)}')
-        rooms = []
+        rooms_data = []
         total_rooms = 0
         available_rooms = 0
         unavailable_rooms = 0
@@ -605,7 +633,7 @@ def admin_view_rooms_view(request):
     context = {
         'user': request.user,
         'user_role': user_role,
-        'rooms': rooms,
+        'rooms': rooms_data,
         'total_rooms': total_rooms,
         'available_rooms': available_rooms,
         'unavailable_rooms': unavailable_rooms,
@@ -615,7 +643,6 @@ def admin_view_rooms_view(request):
         'selected_room_type': request.GET.get('room_type', ''),
         'selected_availability': request.GET.get('availability', ''),
     }
-    
     return render(request, 'AdminPage/viewRooms.html', context)
 
 @login_required
@@ -1112,20 +1139,32 @@ def all_bookings_view(request):
             
             if action and booking_id:
                 booking = Booking.objects.get(id=booking_id)
-                
+                room = booking.room
                 if action == 'approve':
-                    booking.status = 'confirmed'  # Use 'confirmed' to match the model
+                    booking.status = 'confirmed'
                     booking.save()
+                    # Mark room as occupied
+                    room.availability_status = 'occupied'
+                    room.is_available = False
+                    room.save()
                     messages.success(request, f'Booking for {booking.room.name} has been approved!')
-                    
                 elif action == 'reject' or action == 'deny':
-                    booking.status = 'cancelled'  # Use 'cancelled' as we don't have 'rejected' status
+                    booking.status = 'cancelled'
                     booking.save()
+                    # If no other confirmed bookings for this room, mark as available
+                    if not room.bookings.filter(status='confirmed').exclude(id=booking.id).exists():
+                        room.availability_status = 'available'
+                        room.is_available = True
+                        room.save()
                     messages.success(request, f'Booking for {booking.room.name} has been rejected!')
-                    
                 elif action == 'cancel':
                     booking.status = 'cancelled'
                     booking.save()
+                    # If no other confirmed bookings for this room, mark as available
+                    if not room.bookings.filter(status='confirmed').exclude(id=booking.id).exists():
+                        room.availability_status = 'available'
+                        room.is_available = True
+                        room.save()
                     messages.success(request, f'Booking for {booking.room.name} has been cancelled!')
                     
         except Booking.DoesNotExist:
@@ -1178,58 +1217,54 @@ def admin_setting_view(request):
     """Admin settings - AdminPage/setting.html"""
     from django.contrib.auth.forms import PasswordChangeForm
     from django.contrib.auth import update_session_auth_hash
-    
+
     user_role = get_user_role(request.user)
-    form = None
-    
+
+    # Handle profile update and password change
     if request.method == 'POST':
-        action = request.POST.get('action', '')
-        
-        if action == 'change_password':
-            # Handle password change
-            form = PasswordChangeForm(request.user, request.POST)
-            if form.is_valid():
-                user = form.save()
-                update_session_auth_hash(request, user)  # Keep user logged in
-                messages.success(request, 'Your password has been changed successfully!')
-                return redirect('accounts:admin_setting')
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            action = request.POST.get('action')
+            if action == 'update_profile':
+                request.user.first_name = request.POST.get('first_name', request.user.first_name)
+                request.user.last_name = request.POST.get('last_name', request.user.last_name)
+                request.user.faculty = request.POST.get('faculty', getattr(request.user, 'faculty', ''))
+                request.user.department = request.POST.get('department', getattr(request.user, 'department', ''))
+                request.user.phone_number = request.POST.get('phone_number', getattr(request.user, 'phone_number', ''))
+                try:
+                    request.user.save()
+                    return JsonResponse({'success': True, 'message': 'Profile updated successfully!'})
+                except Exception as e:
+                    return JsonResponse({'success': False, 'message': f'Profile update failed: {str(e)}'})
+
+            elif action == 'change_password':
+                password_form = PasswordChangeForm(request.user, request.POST)
+                if password_form.is_valid():
+                    user = password_form.save()
+                    update_session_auth_hash(request, user)
+                    return JsonResponse({'success': True, 'message': 'Password updated successfully!'})
+                else:
+                    errors = password_form.errors.as_json()
+                    return JsonResponse({'success': False, 'message': 'Password change failed. Please check your input.', 'errors': errors})
             else:
-                messages.error(request, 'Please correct the errors below.')
-        
-        elif action == 'save_preferences':
-            # Handle preferences save
-            try:
-                # Here you can save user preferences to user profile or settings model
-                email_notifications = request.POST.get('email_notifications') == 'on'
-                language = request.POST.get('language', 'en')
-                date_format = request.POST.get('date_format', 'mm/dd/yyyy')
-                
-                # If you have a UserProfile model, save preferences there
-                # For now, we'll just show success message
-                messages.success(request, 'Preferences saved successfully!')
-                return redirect('accounts:admin_setting')
-            except Exception as e:
-                messages.error(request, f'Failed to save preferences: {str(e)}')
-        
-        elif action == 'toggle_security':
-            # Handle security toggles
-            setting_name = request.POST.get('setting_name', '')
-            enabled = request.POST.get('enabled') == 'true'
-            
-            # Here you can save security settings
-            messages.success(request, f'{setting_name} {"enabled" if enabled else "disabled"} successfully!')
+                return JsonResponse({'success': False, 'message': 'Invalid action.'})
+        else:
+            # Fallback for non-AJAX POST (not used by new template)
+            request.user.first_name = request.POST.get('first_name', request.user.first_name)
+            request.user.last_name = request.POST.get('last_name', request.user.last_name)
+            request.user.faculty = request.POST.get('faculty', getattr(request.user, 'faculty', ''))
+            request.user.department = request.POST.get('department', getattr(request.user, 'department', ''))
+            request.user.phone_number = request.POST.get('phone_number', getattr(request.user, 'phone_number', ''))
+            request.user.save()
+            messages.success(request, 'Profile updated successfully!')
             return redirect('accounts:admin_setting')
-    
-    else:
-        # GET request - create form
-        form = PasswordChangeForm(request.user)
-    
+
+    # GET request: show forms
+    password_form = PasswordChangeForm(request.user)
     context = {
         'user': request.user,
         'user_role': user_role,
-        'form': form,
+        'password_form': password_form,
     }
-    
     return render(request, 'AdminPage/setting.html', context)
 
 @login_required

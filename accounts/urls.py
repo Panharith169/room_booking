@@ -60,11 +60,6 @@ urlpatterns = [
     path('ajax/get-buildings/', views.get_buildings_ajax, name='get_buildings_ajax'),
     path('ajax/get-room-details/', views.get_room_details_ajax, name='get_room_details_ajax'),
 
-    # Password reset URLs
-    path('password_reset/', auth_views.PasswordResetView.as_view(), name='password_reset'),
-    path('password_reset/done/', auth_views.PasswordResetDoneView.as_view(), name='password_reset_done'),
-    path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
-    path('reset/done/', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
 
     # AJAX Endpoints for Admin Functions
     path('admin/ajax/users/<int:user_id>/change-role/', views.ajax_change_user_role, name='ajax_change_user_role'),
